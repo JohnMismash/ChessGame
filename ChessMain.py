@@ -5,7 +5,7 @@
 # This ChessMain file will display the current game state and handle any user input.
 
 import pygame as p
-from ChessEngine import Game, Move
+from ChessEngine import Game
 
 # Width/Height of the chess board.
 # Resolution can be set to higher with a Width/Height of 400.
@@ -102,10 +102,17 @@ def main():
                 # If the user has made a valid second click to a new square, we want to now
                 # perform this valid move within the Chess game.
                 if len(selected_squares) == 2:
-                    move = Move(selected_squares[0], selected_squares[1], game_state.ChessBoard)
-                    current_square = selected_squares[1]
-                    selected_squares = []
-                    game_state.white_to_move = not game_state.white_to_move
+                    if game_state.processMove(selected_squares[0], selected_squares[1]):
+                        ending_square = selected_squares.pop()
+                        starting_square = selected_squares.pop()
+
+                        current_square = ending_square
+                        selected_squares = []
+                        game_state.white_to_move = not game_state.white_to_move
+
+                    else:
+                        # Invalid Move: game_state and move_log is not updated.
+                        pass
 
         game_clock.tick(MAX_FPS)
         p.transform.flip(console, False, True)

@@ -38,6 +38,20 @@ class Game:
         self.WK_moved = False
         self.BK_moved = False
 
+    def processMove(self, starting_square, ending_square):
+        move = Move(starting_square, ending_square, self)
+
+        if self.IsValidMove(move.startRow, move.endRow, move.startColumn, move.endColumn):
+            self.ChessBoard[move.startRow][move.startColumn] = "--"
+            self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece
+            self.move_log.append(move)
+            return True
+
+        return False
+
+    def IsValidMove(self, startRow, endRow, startColumn, endColumn):
+        return True
+
 
 # This class represents a single move within the game. It includes representation for rank/file, tracking to which
 # piece recently moved, as well as which piece was recently captured (or a piece moves to an empty square).
@@ -49,22 +63,22 @@ class Move:
     files_to_columns = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
     column_to_files = {value: key for key, value in files_to_columns.items()}
 
-    def __init__(self, starting_square, ending_square, ChessBoard):
+    def __init__(self, starting_square, ending_square, game_state):
         self.startRow = starting_square[0]
         self.startColumn = starting_square[1]
 
         self.endRow = ending_square[0]
         self.endColumn = ending_square[1]
 
-        self.movedPiece = ChessBoard[self.startRow][self.startColumn]
-        self.capturedPiece = ChessBoard[self.endRow][self.endColumn]
-
-        ChessBoard[self.startRow][self.startColumn] = "--"
-        ChessBoard[self.endRow][self.endColumn] = self.movedPiece
+        self.movedPiece = game_state.ChessBoard[self.startRow][self.startColumn]
+        self.capturedPiece = game_state.ChessBoard[self.endRow][self.endColumn]
 
     def GetChessNotation(self):
         pass
 
     # Chess notation specifies that the column/file comes before the row/rank.
-    def GetRankFile(self, row, column):
-        return self.column_to_files[column] + self.rows_to_ranks[row]
+    def GetRankFile(self):
+        return self.column_to_files[self.endColumn] + self.rows_to_ranks[self.endRow]
+
+
+
