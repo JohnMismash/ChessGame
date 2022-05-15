@@ -8,10 +8,12 @@ in the current game.
 """
 
 
-# This chess board is represented as a 8x8 two dimensional (2D) list. Each element of this list
-# has two characters: The first character represents whether the piece in the game is White/Black,
-# and the second character represents the type of piece. If an element contains "--", then this
-# represents a empty space on the board.
+# This chess board is represented as a 8x8 two dimensional (2D) list.
+# Each element of this list has two characters:
+# The first character represents whether the piece in the game is White/Black.
+# The second character represents the type of piece.
+# If an element contains "--", then this represents a empty space on the board.
+# The empty space square with "--" can still be processed as a string with two characters.
 
 # First Character: W - White, B - Black
 # Second Character: R - Rook, N - Knight, Q - Queen, K - King, B - Bishop, P - Pawn
@@ -35,30 +37,32 @@ class Game:
         self.move_log = []
 
 
-# This class represents a single move within the game. It includes representation for rank/file, as well as
-# tracking which piece recently moved, as well as which piece was recently captured (or a piece moves to an
-# empty square).
+# This class represents a single move within the game. It includes representation for rank/file, tracking to which
+# piece recently moved, as well as which piece was recently captured (or a piece moves to an empty square).
 class Move:
     # This will allow us to represent our rows and columns in rank/file notation.
-    RanktoRows = {"1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1, "8": 0}
-    RowstoRanks = {value: key for key, value in RanktoRows.items()}
+    ranks_to_rows = {"1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1, "8": 0}
+    rows_to_ranks = {value: key for key, value in ranks_to_rows.items()}
 
-    FilestoColumns = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
-    ColumntoFiles = {value: key for key, value in FilestoColumns.items()}
+    files_to_columns = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
+    column_to_files = {value: key for key, value in files_to_columns.items()}
 
-    def __init__(self, startingSq, endingSq, ChessBoard):
-        self.startRow = startingSq[0]
-        self.startColumn = startingSq[1]
+    def __init__(self, starting_square, ending_square, ChessBoard):
+        self.startRow = starting_square[0]
+        self.startColumn = starting_square[1]
 
-        self.endRow = endingSq[0]
-        self.endColumn = endingSq[1]
+        self.endRow = ending_square[0]
+        self.endColumn = ending_square[1]
 
         self.movedPiece = ChessBoard[self.startRow][self.startColumn]
         self.capturedPiece = ChessBoard[self.endRow][self.endColumn]
+
+        ChessBoard[self.startRow][self.startColumn] = "--"
+        ChessBoard[self.endRow][self.endColumn] = self.movedPiece
 
     def GetChessNotation(self):
         pass
 
     # Chess notation specifies that the column/file comes before the row/rank.
     def GetRankFile(self, row, column):
-        return self.ColumntoFiles[column] + self.RowstoRanks[row]
+        return self.column_to_files[column] + self.rows_to_ranks[row]
