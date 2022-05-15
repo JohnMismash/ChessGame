@@ -107,9 +107,10 @@ def main():
                     selected_squares = []
                     game_state.white_to_move = not game_state.white_to_move
 
-        DrawGame(console, game_state)
         game_clock.tick(MAX_FPS)
-        p.display.flip()
+        p.transform.flip(console, False, True)
+        p.display.update()
+        DrawGame(console, game_state)
 
 
 # This will draw everything to the console, including the squares and the pieces.

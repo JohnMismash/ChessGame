@@ -35,6 +35,8 @@ class Game:
 
         self.white_to_move = True
         self.move_log = []
+        self.WK_moved = False
+        self.BK_moved = False
 
 
 # This class represents a single move within the game. It includes representation for rank/file, tracking to which
