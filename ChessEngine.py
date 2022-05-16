@@ -40,6 +40,7 @@ class Game:
 
     def processMove(self, starting_square, ending_square):
         move = Move(starting_square, ending_square, self)
+        print(move.getChessNotation())
 
         if move.isValidMove(move.startRow, move.endRow, move.startColumn, move.endColumn,
                             move.movedPiece, move.capturedPiece):
