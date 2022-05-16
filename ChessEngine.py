@@ -46,6 +46,7 @@ class Game:
             self.ChessBoard[move.startRow][move.startColumn] = "--"
             self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece
             self.move_log.append(move)
+            self.white_to_move = not self.white_to_move
             return True
 
         return True

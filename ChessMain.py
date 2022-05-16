@@ -25,7 +25,6 @@ IMAGES = {}
 # Initialize our pyGame globally, so no methods will rely on this anywhere else in the program.
 p.init()
 
-
 # Initialize the dictionary of Images. We can now access any piece image with IMAGES['WP']
 # for example and each string is represented as the key in our dictionary.
 def loadPieceImages():
@@ -58,13 +57,16 @@ def main():
     loadPieceImages()
 
     # Draw the initial game board and pieces.
-    drawGame(console, game_state)
+    drawGame(console, game_state, False, None, None)
 
     # Checks if the console has been closed.
     game_is_running = True
 
     current_square = ()  # Tuple -> (row, column)
     selected_squares = []  # List of player clicks -> [(row, column), (row, column)]
+    isPieceSelected = False
+    highlightedSquareRow = None
+    highlightedSquareColumn = None
 
     while game_is_running:
         for event in p.event.get():
@@ -90,42 +92,54 @@ def main():
                 # Otherwise, we can update the current square that has been selected as normal.
                 if current_square != (click_row, click_column):
                     current_square = (click_row, click_column)
+                    highlightedSquareRow = click_row
+                    highlightedSquareColumn = click_column
+                    isPieceSelected = True
 
                     # Keeps track of the first and second clicks that a player makes.
                     selected_squares.append(current_square)
-                    print(selected_squares)
 
                 else:
                     current_square = ()
                     selected_squares = []
+                    highlightedSquareRow = None
+                    highlightedSquareColumn = None
 
                 # If the user has made a valid second click to a new square, we want to now
                 # perform this valid move within the Chess game.
                 if len(selected_squares) == 2:
-                    if game_state.processMove(selected_squares[0], selected_squares[1]):
-                        ending_square = selected_squares.pop()
-                        starting_square = selected_squares.pop()
+                    highlightedSquareRow = None
+                    highlightedSquareColumn = None
 
-                        current_square = ending_square
+                    if game_state.processMove(selected_squares[0], selected_squares[1]):
+                        current_square = ()
                         selected_squares = []
-                        game_state.white_to_move = not game_state.white_to_move
 
                     else:
                         # Invalid Move: game_state and move_log is not updated.
                         pass
 
-        drawGame(console, game_state)
-        game_clock.tick(MAX_FPS)
-        p.display.flip()
+        if isPieceSelected:
+            drawGame(console, game_state, True, highlightedSquareRow, highlightedSquareColumn)
+            game_clock.tick(MAX_FPS)
+            p.display.flip()
+
+        else:
+            drawGame(console, game_state, False, None, None)
+            game_clock.tick(MAX_FPS)
+            p.display.flip()
 
 
 # This will draw everything to the console, including the squares and the pieces.
-def drawGame(console, game_state):
-    drawBoard(console)
+def drawGame(console, game_state, isSquareSelected, highlightedSquareRow, highlightedSquareColumn):
 
-    # TODO: Draw highlighting or move suggestions.
+    if isSquareSelected:
+        drawBoardHighlight(console, highlightedSquareRow, highlightedSquareColumn)
+        drawPieces(console, game_state.ChessBoard)
 
-    drawPieces(console, game_state.ChessBoard)
+    else:
+        drawBoard(console)
+        drawPieces(console, game_state.ChessBoard)
 
 
 # This will draw the squares of the Chess Board.
@@ -147,6 +161,37 @@ def drawBoard(console):
 
             # Draw the square given the respective position and color.
             p.draw.rect(console, square_color, (column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
+
+# This will draw the squares of the Chess Board.
+def drawBoardHighlight(console, highlightedSquareRow, highlightedSquareColumn):
+    # These colors may be changed to be any color scheme of the users choice.
+    square_colors = [p.Color("white"), p.Color("dark orange")]
+
+    # We know that every board setup will always have a "light" square in the top left corner,
+    # regardless of the perspective of white/black.
+
+    # We can also set up our square_colors to that the access to a light color is at the 0 index, and the access
+    # to a dark color is the 1 index.
+    for row in range(DIMENSION):
+        for column in range(DIMENSION):
+            # When we add the row and column number and mod by 2, we will know whether that
+            # position should be a light or dark square if there is a remainder or not, and we can use this
+            # remainder of 0 or 1 to access our colors.
+
+            if row == highlightedSquareRow and column == highlightedSquareColumn:
+                square_colors = [p.Color("red"), p.Color("red")]
+                square_color = square_colors[(row + column) % 2]
+
+                # Draw the square given the respective position and color.
+                p.draw.rect(console, square_color, (column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                square_colors = [p.Color("white"), p.Color("dark orange")]
+
+            else:
+                square_color = square_colors[(row + column) % 2]
+
+                # Draw the square given the respective position and color.
+                p.draw.rect(console, square_color, (column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
 
 # This will draw the initial setup of the pieces on the board.
