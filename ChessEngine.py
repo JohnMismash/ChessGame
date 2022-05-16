@@ -51,8 +51,15 @@ class Game:
 
         return True
 
+    # This function will undo a previous move when the 'z' button is pressed.
+    # Functionality is set to do nothing if there are no previous moves.
     def undoMove(self):
-        pass
+        print(self.move_log)
+        if len(self.move_log) != 0:
+            previous_move = self.move_log.pop()
+            self.ChessBoard[previous_move.startRow][previous_move.startColumn] = previous_move.movedPiece
+            self.ChessBoard[previous_move.endRow][previous_move.endColumn] = previous_move.capturedPiece
+            self.white_to_move = not self.white_to_move
 
 
 # This class represents a single move within the game. It includes representation for rank/file, tracking to which

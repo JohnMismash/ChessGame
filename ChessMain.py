@@ -117,6 +117,10 @@ def main():
                         # Invalid Move: game_state and move_log is not updated.
                         pass
 
+            elif event.type == p.KEYDOWN:
+                if event.key == p.K_z:
+                    game_state.undoMove()
+
         if isPieceSelected:
             drawGame(console, game_state, True, highlightedSquareRow, highlightedSquareColumn)
             game_clock.tick(MAX_FPS)
