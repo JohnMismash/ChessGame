@@ -41,7 +41,7 @@ class Game:
     def processMove(self, starting_square, ending_square):
         move = Move(starting_square, ending_square, self)
 
-        if self.IsValidMove(move.startRow, move.endRow, move.startColumn, move.endColumn,
+        if self.isValidMove(move.startRow, move.endRow, move.startColumn, move.endColumn,
                             move.movedPiece, move.capturedPiece):
 
             self.ChessBoard[move.startRow][move.startColumn] = "--"
@@ -51,7 +51,10 @@ class Game:
 
         return False
 
-    def IsValidMove(self, startRow, endRow, startColumn, endColumn, movedPiece, capturedPiece):
+    def isValidMove(self, startRow, endRow, startColumn, endColumn, movedPiece, capturedPiece):
+        if capturedPiece == "WK" or capturedPiece == "BK":
+            return False
+
         return True
 
 

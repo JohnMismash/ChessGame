@@ -29,7 +29,7 @@ p.init()
 
 # Initialize the dictionary of Images. We can now access any piece image with IMAGES['WP']
 # for example and each string is represented as the key in our dictionary.
-def load_piece_images():
+def loadPieceImages():
     piece_images = ['WP', 'WR', 'WN', 'WB', 'WQ', 'WK', 'BP', 'BR', 'BN', 'BB', 'BQ', 'BK']
 
     # Loads each piece image into our global dictionary of pieces. This will also scale each image to
@@ -48,7 +48,7 @@ def main():
     # Create a clock that will run to check for events.
     game_clock = p.time.Clock()
 
-    console.fill("white")
+    console.fill(p.Color("white"))
 
     # Create a "blank" game state that will allow for all the pieces to be in their
     # respective starting position.
@@ -58,7 +58,7 @@ def main():
 
     # Load the images into the global variable so they are accessible. This is only called once
     # in the program.
-    load_piece_images()
+    loadPieceImages()
 
     # Checks if the console has been closed.
     game_is_running = True
@@ -117,17 +117,17 @@ def main():
         game_clock.tick(MAX_FPS)
         p.transform.flip(console, False, True)
         p.display.update()
-        DrawGame(console, game_state)
+        drawGame(console, game_state)
 
 
 # This will draw everything to the console, including the squares and the pieces.
-def DrawGame(console, game_state):
-    DrawBoard(console)
-    DrawPieces(console, game_state.ChessBoard)
+def drawGame(console, game_state):
+    drawBoard(console)
+    drawPieces(console, game_state.ChessBoard)
 
 
 # This will draw the squares of the Chess Board.
-def DrawBoard(console):
+def drawBoard(console):
     # These colors may be changed to be any color scheme of the users choice.
     square_colors = [p.Color("white"), p.Color("gray")]
 
@@ -148,7 +148,7 @@ def DrawBoard(console):
 
 
 # This will draw the initial setup of the pieces on the board.
-def DrawPieces(console, ChessBoard):
+def drawPieces(console, ChessBoard):
     # Since we know the initial setup of the board, we can access each part of the board, and draw the
     # respective piece image.
     for row in range(DIMENSION):
