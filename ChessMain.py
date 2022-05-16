@@ -82,7 +82,6 @@ def main():
 
                 # Since our x,y coordinates are now stored in an array, we can access this array
                 # and capture the row and column respective to where they clicked.
-
                 # NOTE: Each row and column will start at zero, unlike a representation of an actual chess board.
                 click_column = click_location[0] // SQUARE_SIZE
                 click_row = click_location[1] // SQUARE_SIZE
@@ -108,12 +107,11 @@ def main():
                 # If the user has made a valid second click to a new square, we want to now
                 # perform this valid move within the Chess game.
                 if len(selected_squares) == 2:
-                    highlightedSquareRow = None
-                    highlightedSquareColumn = None
-
                     if game_state.processMove(selected_squares[0], selected_squares[1]):
                         current_square = ()
                         selected_squares = []
+                        highlightedSquareRow = None
+                        highlightedSquareColumn = None
 
                     else:
                         # Invalid Move: game_state and move_log is not updated.
@@ -135,11 +133,11 @@ def drawGame(console, game_state, isSquareSelected, highlightedSquareRow, highli
 
     if isSquareSelected:
         drawBoardHighlight(console, highlightedSquareRow, highlightedSquareColumn)
-        drawPieces(console, game_state.ChessBoard)
 
     else:
         drawBoard(console)
-        drawPieces(console, game_state.ChessBoard)
+
+    drawPieces(console, game_state.ChessBoard)
 
 
 # This will draw the squares of the Chess Board.
