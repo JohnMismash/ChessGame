@@ -114,9 +114,9 @@ def main():
                         # Invalid Move: game_state and move_log is not updated.
                         pass
 
-        game_clock.tick(MAX_FPS)
         drawGame(console, game_state)
-        flipBoard(game_state)
+        game_clock.tick(MAX_FPS)
+        p.display.flip()
 
 
 # This will draw everything to the console, including the squares and the pieces.

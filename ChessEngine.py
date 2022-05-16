@@ -42,15 +42,13 @@ class Game:
         move = Move(starting_square, ending_square, self)
         print(move.getChessNotation())
 
-        if move.isValidMove(move.startRow, move.endRow, move.startColumn, move.endColumn,
-                            move.movedPiece, move.capturedPiece):
-
+        if move.isValidMove():
             self.ChessBoard[move.startRow][move.startColumn] = "--"
             self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece
             self.move_log.append(move)
             return True
 
-        return False
+        return True
 
     def undoMove(self):
         pass
@@ -86,5 +84,5 @@ class Move:
 
     # Determines if a move is valid, and is controlled by the Game state.
     def isValidMove(self):
-        pass
+        return True
 
