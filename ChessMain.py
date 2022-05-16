@@ -1,7 +1,6 @@
 # John (Jack) Mismash
 # 5/7/2021
 
-
 # This ChessMain file will display the current game state and handle any user input.
 
 import pygame as p
@@ -54,17 +53,18 @@ def main():
     # respective starting position.
     game_state = Game()
 
-    print(game_state.ChessBoard)
-
     # Load the images into the global variable so they are accessible. This is only called once
     # in the program.
     loadPieceImages()
 
+    # Draw the initial game board and pieces.
+    drawGame(console, game_state)
+
     # Checks if the console has been closed.
     game_is_running = True
 
-    current_square = ()
-    selected_squares = []
+    current_square = ()  # Tuple -> (row, column)
+    selected_squares = []  # List of player clicks -> [(row, column), (row, column)]
 
     while game_is_running:
         for event in p.event.get():
@@ -115,21 +115,23 @@ def main():
                         pass
 
         game_clock.tick(MAX_FPS)
-        p.transform.flip(console, False, True)
-        p.display.update()
         drawGame(console, game_state)
+        flipBoard(game_state)
 
 
 # This will draw everything to the console, including the squares and the pieces.
 def drawGame(console, game_state):
     drawBoard(console)
+
+    # TODO: Draw highlighting or move suggestions.
+
     drawPieces(console, game_state.ChessBoard)
 
 
 # This will draw the squares of the Chess Board.
 def drawBoard(console):
     # These colors may be changed to be any color scheme of the users choice.
-    square_colors = [p.Color("white"), p.Color("gray")]
+    square_colors = [p.Color("white"), p.Color("dark orange")]
 
     # We know that every board setup will always have a "light" square in the top left corner,
     # regardless of the perspective of white/black.
@@ -149,7 +151,7 @@ def drawBoard(console):
 
 # This will draw the initial setup of the pieces on the board.
 def drawPieces(console, ChessBoard):
-    # Since we know the initial setup of the board, we can access each part of the board, and draw the
+    # Since we know the initial setup of the board, we can access each piece on the board, and draw the
     # respective piece image.
     for row in range(DIMENSION):
         for column in range(DIMENSION):
@@ -158,6 +160,11 @@ def drawPieces(console, ChessBoard):
             if piece != "--":
                 piece_image = IMAGES[piece]
                 console.blit(piece_image, p.Rect(column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
+
+# This will flip the view of the board to represent the switching of turns.
+def flipBoard(game_state):
+    pass
 
 
 if __name__ == "__main__":

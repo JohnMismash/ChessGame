@@ -41,7 +41,7 @@ class Game:
     def processMove(self, starting_square, ending_square):
         move = Move(starting_square, ending_square, self)
 
-        if self.isValidMove(move.startRow, move.endRow, move.startColumn, move.endColumn,
+        if move.isValidMove(move.startRow, move.endRow, move.startColumn, move.endColumn,
                             move.movedPiece, move.capturedPiece):
 
             self.ChessBoard[move.startRow][move.startColumn] = "--"
@@ -51,11 +51,8 @@ class Game:
 
         return False
 
-    def isValidMove(self, startRow, endRow, startColumn, endColumn, movedPiece, capturedPiece):
-        if capturedPiece == "WK" or capturedPiece == "BK":
-            return False
-
-        return True
+    def undoMove(self):
+        pass
 
 
 # This class represents a single move within the game. It includes representation for rank/file, tracking to which
@@ -78,12 +75,15 @@ class Move:
         self.movedPiece = game_state.ChessBoard[self.startRow][self.startColumn]
         self.capturedPiece = game_state.ChessBoard[self.endRow][self.endColumn]
 
-    def GetChessNotation(self):
+    # Produces the necessary chess notation for the move log.
+    def getChessNotation(self):
         pass
 
     # Chess notation specifies that the column/file comes before the row/rank.
-    def GetRankFile(self):
+    def getRankFile(self):
         return self.column_to_files[self.endColumn] + self.rows_to_ranks[self.endRow]
 
-
+    # Determines if a move is valid, and is controlled by the Game state.
+    def isValidMove(self, startRow, endRow, startColumn, endColumn, movedPiece, capturedPiece):
+        pass
 
