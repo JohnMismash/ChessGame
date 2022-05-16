@@ -77,13 +77,13 @@ class Move:
 
     # Produces the necessary chess notation for the move log.
     def getChessNotation(self):
-        pass
+        return self.getRankFile(self.startRow, self.startColumn) + self.getRankFile(self.endRow, self.endColumn)
 
     # Chess notation specifies that the column/file comes before the row/rank.
-    def getRankFile(self):
-        return self.column_to_files[self.endColumn] + self.rows_to_ranks[self.endRow]
+    def getRankFile(self, row, column):
+        return self.column_to_files[column] + self.rows_to_ranks[row]
 
     # Determines if a move is valid, and is controlled by the Game state.
-    def isValidMove(self, startRow, endRow, startColumn, endColumn, movedPiece, capturedPiece):
+    def isValidMove(self):
         pass
 
