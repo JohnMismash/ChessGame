@@ -61,6 +61,47 @@ class Game:
             self.ChessBoard[previous_move.endRow][previous_move.endColumn] = previous_move.capturedPiece
             self.white_to_move = not self.white_to_move
 
+    def getValidMoves(self):
+        pass
+
+    def getAllPossibleMoves(self):
+        moves = []
+        for row in range(len(self.ChessBoard)):
+            for column in range(len(self.ChessBoard[row])):
+                turn = self.ChessBoard[row][column][0]  # 'W' or 'B'
+                if (turn == 'W' and self.white_to_move) and (turn == 'B' and not self.white_to_move):
+                    current_piece = self.ChessBoard[row][column][1]  # Any given piece.
+                    if current_piece == 'P':  # Pawn
+                        self.getPawnMoves(row, column, moves)
+                    elif current_piece == 'R':  # Rook
+                        self.getRookMoves(row, column, moves)
+                    elif current_piece == 'N':  # Knight
+                        self.getKnightMoves(row, column, moves)
+                    elif current_piece == 'B':  # Bishop
+                        self.getBishopMoves(row, column, moves)
+                    elif current_piece == 'Q':  # Queen
+                        self.getQueenMoves(row, column, moves)
+                    elif current_piece == 'K':  # King
+                        self.getKingMoves(row, column, moves)
+
+    def getPawnMoves(self, row, column, moves):
+        pass
+
+    def getRookMoves(self, row, column, moves):
+        pass
+
+    def getKnightMoves(self, row, column, moves):
+        pass
+
+    def getBishopMoves(self, row, column, moves):
+        pass
+
+    def getQueenMoves(self, row, column, moves):
+        pass
+
+    def getKingMoves(self, row, column, moves):
+        pass
+
 
 # This class represents a single move within the game. It includes representation for rank/file, tracking to which
 # piece recently moved, as well as which piece was recently captured (or a piece moves to an empty square).
