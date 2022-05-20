@@ -4,7 +4,7 @@
 # This ChessMain file will display the current game state and handle any user input.
 
 import pygame as p
-from ChessEngine import Game
+from ChessEngine import ChessGame, Move
 
 # Width/Height of the chess board.
 # Resolution can be set to higher with a Width/Height of 400.
@@ -50,7 +50,7 @@ def main():
 
     # Create a "blank" game state that will allow for all the pieces to be in their
     # respective starting position.
-    gameState = Game()
+    gameState = ChessGame()
 
     # Returns a list of valid moves at the beginning of the game.
     validMoves = gameState.getValidMoves()
@@ -113,20 +113,30 @@ def main():
                 # If the user has made a valid second click to a new square, we want to now
                 # perform this valid move within the Chess game.
                 if len(selected_squares) == 2:
-                    if gameState.processMove(selected_squares[0], selected_squares[1]):
-                        current_square = ()
-                        selected_squares = []
-                        highlightedSquareRow = None
-                        highlightedSquareColumn = None
+                    move = Move(selected_squares[0], selected_squares[1], gameState)
+                    validMoves = gameState.getValidMoves()
 
-                    else:
-                        # Invalid Move: gameState and move_log is not updated.
-                        pass
+                    if move in validMoves:
+                        gameState.processMove(move)
+                        moveMade = True
 
+                    current_square = ()
+                    selected_squares = []
+                    highlightedSquareRow = None
+                    highlightedSquareColumn = None
+
+            # When the 'z' key is pressed, undo the move.
             elif event.type == p.KEYDOWN:
                 if event.key == p.K_z:
                     gameState.undoMove()
+                    moveMade = True
 
+        # If a move was just made, we now want to update the list of possible valid moves.
+        if moveMade:
+            validMoves = gameState.getValidMoves()
+            moveMade = False
+
+        # If a piece is selected, we can redraw the game to reflect a highlighted square.
         if isPieceSelected:
             drawGame(console, gameState, True, highlightedSquareRow, highlightedSquareColumn)
             gameClock.tick(MAX_FPS)

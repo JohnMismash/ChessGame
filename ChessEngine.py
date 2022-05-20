@@ -20,7 +20,7 @@ in the current game.
 
 # This class also maintains a record of who's turn it is to move, as well as a move log to track all of
 # the moved within the game.
-class Game:
+class ChessGame:
     def __init__(self):
         self.ChessBoard = [
             ["BR", "BN", "BB", "BQ", "BK", "BB", "BN", "BR"],
@@ -38,23 +38,20 @@ class Game:
         self.WK_moved = False
         self.BK_moved = False
 
-    def processMove(self, starting_square, ending_square):
-        move = Move(starting_square, ending_square, self)
-        print(move.getChessNotation())
+        self.Check = False
+        self.Checkmate = False
 
-        if move.isValidMove():
-            self.ChessBoard[move.startRow][move.startColumn] = "--"
-            self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece
-            self.moveLog.append(move)
-            self.white_to_move = not self.white_to_move
-            return True
+    def processMove(self, move):
+        self.ChessBoard[move.startRow][move.startColumn] = "--"
+        self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece
+        self.moveLog.append(move)
+        self.white_to_move = not self.white_to_move
 
         return True
 
     # This function will undo a previous move when the 'z' button is pressed.
     # Functionality is set to do nothing if there are no previous moves.
     def undoMove(self):
-        print(self.moveLog)
         if len(self.moveLog) != 0:
             previous_move = self.moveLog.pop()
             self.ChessBoard[previous_move.startRow][previous_move.startColumn] = previous_move.movedPiece
@@ -62,18 +59,21 @@ class Game:
             self.white_to_move = not self.white_to_move
 
     def getValidMoves(self):
-        pass
+        return self.getAllPossibleMoves()
 
     def getAllPossibleMoves(self):
         moves = []
         for row in range(len(self.ChessBoard)):
             for column in range(len(self.ChessBoard[row])):
                 turn = self.ChessBoard[row][column][0]  # 'W' or 'B'
-                if (turn == 'W' and self.white_to_move) and (turn == 'B' and not self.white_to_move):
+                print("Turn: ", turn)
+                if (turn == 'W' and self.white_to_move) or (turn == 'B' and not self.white_to_move):
                     current_piece = self.ChessBoard[row][column][1]  # Any given piece.
+                    print("Piece: ", current_piece)
 
                     if current_piece == 'P':  # Pawn
-                        self.getPawnMoves(row, column, moves)
+                        moves = self.getPawnMoves(row, column, moves)
+
                     elif current_piece == 'R':  # Rook
                         self.getRookMoves(row, column, moves)
                     elif current_piece == 'N':  # Knight
@@ -85,8 +85,40 @@ class Game:
                     elif current_piece == 'K':  # King
                         self.getKingMoves(row, column, moves)
 
+        return moves
+
     def getPawnMoves(self, row, column, moves):
-        pass
+        if self.white_to_move:
+            # One or two spaces ahead.
+            if self.ChessBoard[row - 1][column] == "--":
+                moves.append(Move((row, column), (row - 1, column), self))
+                if row == 6 and self.ChessBoard[row - 2][column] == "--":
+                    moves.append(Move((row, column), (row - 2, column), self))
+
+            # Diagonal Left
+            if row > 0 and column > 0 and self.ChessBoard[row - 1][column - 1][0] == 'B':
+                moves.append(Move((row, column), (row - 1, column - 1), self))
+
+            # Diagonal Right
+            if row > 0 and column < 7 and self.ChessBoard[row - 1][column + 1][0] == 'B':
+                moves.append(Move((row, column), (row - 1, column + 1), self))
+
+        else:
+            # One or two spaces ahead.
+            if self.ChessBoard[row + 1][column] == "--":
+                moves.append(Move((row, column), (row + 1, column), self))
+                if row == 1 and self.ChessBoard[row + 2][column] == "--":
+                    moves.append(Move((row, column), (row + 2, column), self))
+
+            # Diagonal Left
+            if row < 7 and column > 0 and self.ChessBoard[row + 1][column - 1][0] == 'W':
+                moves.append(Move((row, column), (row + 1, column - 1), self))
+
+            # Diagonal Right
+            if row < 7 and column < 7 and self.ChessBoard[row + 1][column + 1][0] == 'W':
+                moves.append(Move((row, column), (row + 1, column + 1), self))
+
+        return moves
 
     def getRookMoves(self, row, column, moves):
         pass
@@ -123,6 +155,16 @@ class Move:
 
         self.movedPiece = game_state.ChessBoard[self.startRow][self.startColumn]
         self.capturedPiece = game_state.ChessBoard[self.endRow][self.endColumn]
+
+        # Unique ID for each move.
+        self.moveID = self.startRow * 1000 + self.endRow * 100 + self.startColumn * 10 + self.endColumn
+
+    def __eq__(self, other):
+        if isinstance(other, Move):
+            if self.moveID == other.moveID:
+                return True
+
+        return False
 
     # Produces the necessary chess notation for the move log.
     def getChessNotation(self):
