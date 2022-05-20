@@ -34,7 +34,7 @@ class Game:
         ]
 
         self.white_to_move = True
-        self.move_log = []
+        self.moveLog = []
         self.WK_moved = False
         self.BK_moved = False
 
@@ -45,7 +45,7 @@ class Game:
         if move.isValidMove():
             self.ChessBoard[move.startRow][move.startColumn] = "--"
             self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece
-            self.move_log.append(move)
+            self.moveLog.append(move)
             self.white_to_move = not self.white_to_move
             return True
 
@@ -54,9 +54,9 @@ class Game:
     # This function will undo a previous move when the 'z' button is pressed.
     # Functionality is set to do nothing if there are no previous moves.
     def undoMove(self):
-        print(self.move_log)
-        if len(self.move_log) != 0:
-            previous_move = self.move_log.pop()
+        print(self.moveLog)
+        if len(self.moveLog) != 0:
+            previous_move = self.moveLog.pop()
             self.ChessBoard[previous_move.startRow][previous_move.startColumn] = previous_move.movedPiece
             self.ChessBoard[previous_move.endRow][previous_move.endColumn] = previous_move.capturedPiece
             self.white_to_move = not self.white_to_move
@@ -71,6 +71,7 @@ class Game:
                 turn = self.ChessBoard[row][column][0]  # 'W' or 'B'
                 if (turn == 'W' and self.white_to_move) and (turn == 'B' and not self.white_to_move):
                     current_piece = self.ChessBoard[row][column][1]  # Any given piece.
+
                     if current_piece == 'P':  # Pawn
                         self.getPawnMoves(row, column, moves)
                     elif current_piece == 'R':  # Rook
