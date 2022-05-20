@@ -198,7 +198,7 @@ def drawBoardHighlight(console, highlightedSquareRow, highlightedSquareColumn):
             # remainder of 0 or 1 to access our colors.
 
             if row == highlightedSquareRow and column == highlightedSquareColumn:
-                square_colors = [p.Color("red"), p.Color("red")]
+                square_colors = [p.Color("gray"), p.Color("gray")]
                 square_color = square_colors[(row + column) % 2]
 
                 # Draw the square given the respective position and color.
