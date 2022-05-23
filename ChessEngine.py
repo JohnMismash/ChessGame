@@ -123,16 +123,13 @@ class ChessGame:
 
     def getRookMoves(self, row, column, moves):
         directions = [
-            (-1, 0),  # Northern Movement
-            (0, -1),  # Western Movement
-            (1, 0),   # Southern Movement
-            (0, 1)    # Eastern Movement
+            (-1, 0),  # Up
+            (0, -1),  # Left
+            (1, 0),   # Down
+            (0, 1)    # Right
         ]
 
-        if self.white_to_move:
-            enemyColor = 'B'
-        else:
-            enemyColor = 'W'
+        enemyColor = 'B' if self.white_to_move else 'W'
 
         for direction in directions:
             for row_count in range(1, 8):
@@ -152,7 +149,7 @@ class ChessGame:
                     else:
                         break
 
-                # Move does not exist within the boundary.
+                # Move does not exist within the ChessBoard boundary.
                 else:
                     break
 
