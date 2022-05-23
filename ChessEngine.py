@@ -38,10 +38,15 @@ class ChessGame:
         self.WK_moved = False
         self.BK_moved = False
 
-        self.Check = False
-        self.Checkmate = False
+        self.WK_Location = (7, 4)
+        self.BK_Location = (0, 4)
 
     def processMove(self, move):
+        if move.movedPiece == "WK":
+            self.WK_Location = (move.endRow, move.endColumn)
+        elif move.movedPiece == "BK":
+            self.BK_Location = (move.endRow, move.endColumn)
+
         self.ChessBoard[move.startRow][move.startColumn] = "--"
         self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece
         self.moveLog.append(move)
@@ -54,6 +59,12 @@ class ChessGame:
     def undoMove(self):
         if len(self.moveLog) != 0:
             previous_move = self.moveLog.pop()
+
+            if previous_move.movedPiece == "WK":
+                self.WK_Location = (previous_move.startRow, previous_move.startColumn)
+            elif previous_move.movedPiece == "BK":
+                self.BK_Location = (previous_move.startRow, previous_move.startColumn)
+
             self.ChessBoard[previous_move.startRow][previous_move.startColumn] = previous_move.movedPiece
             self.ChessBoard[previous_move.endRow][previous_move.endColumn] = previous_move.capturedPiece
             self.white_to_move = not self.white_to_move
