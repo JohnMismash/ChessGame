@@ -33,7 +33,7 @@ class ChessGame:
             ["WR", "WN", "WB", "WQ", "WK", "WB", "WN", "WR"]
         ]
 
-        self.white_to_move = True
+        self.whiteToMove = True
         self.moveLog = []
         self.WK_moved = False
         self.BK_moved = False
@@ -50,7 +50,7 @@ class ChessGame:
         self.ChessBoard[move.startRow][move.startColumn] = "--"
         self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece
         self.moveLog.append(move)
-        self.white_to_move = not self.white_to_move
+        self.whiteToMove = not self.whiteToMove
 
         return True
 
@@ -58,21 +58,63 @@ class ChessGame:
     # Functionality is set to do nothing if there are no previous moves.
     def undoMove(self):
         if len(self.moveLog) != 0:
-            previous_move = self.moveLog.pop()
+            previousMove = self.moveLog.pop()
 
-            if previous_move.movedPiece == "WK":
-                self.WK_Location = (previous_move.startRow, previous_move.startColumn)
-            elif previous_move.movedPiece == "BK":
-                self.BK_Location = (previous_move.startRow, previous_move.startColumn)
+            if previousMove.movedPiece == "WK":
+                self.WK_Location = (previousMove.startRow, previousMove.startColumn)
+            elif previousMove.movedPiece == "BK":
+                self.BK_Location = (previousMove.startRow, previousMove.startColumn)
 
-            self.ChessBoard[previous_move.startRow][previous_move.startColumn] = previous_move.movedPiece
-            self.ChessBoard[previous_move.endRow][previous_move.endColumn] = previous_move.capturedPiece
-            self.white_to_move = not self.white_to_move
+            self.ChessBoard[previousMove.startRow][previousMove.startColumn] = previousMove.movedPiece
+            self.ChessBoard[previousMove.endRow][previousMove.endColumn] = previousMove.capturedPiece
+            self.whiteToMove = not self.whiteToMove
 
     def getValidMoves(self):
+        # Generate all possible moves.
         allPossibleMoves = self.getAllPossibleMoves()
 
+        # Individually make each move, although traverse backwards to avoid skipping elements as some are removed.
+        for i in range(len(allPossibleMoves) - 1, -1, -1):
+            move = allPossibleMoves[i]
+            self.processMove(move)
+            self.whiteToMove = not self.whiteToMove
+
+            if self.inCheck():
+                allPossibleMoves.remove(move)
+
+            self.whiteToMove = not self.whiteToMove
+            self.undoMove()
+
         return allPossibleMoves
+
+    # Determine if the current player is in check.
+    def inCheck(self):
+        if self.whiteToMove:
+            row = self.WK_Location[0]
+            column = self.WK_Location[1]
+            return self.squareUnderAttack(row, column)
+
+        else:
+            row = self.BK_Location[0]
+            column = self.BK_Location[1]
+            return self.squareUnderAttack(row, column)
+
+    # Determine if the enemy can attack the square (row, column).
+    def squareUnderAttack(self, row, column):
+        # Switch view to opponent.
+        self.whiteToMove = not self.whiteToMove
+
+        # Generate all possible moves for the opponent.
+        opponentMoves = self.getAllPossibleMoves()
+
+        # Restore previous turn.
+        self.whiteToMove = not self.whiteToMove
+
+        for move in opponentMoves:
+            if move.endRow == row and move.endColumn == column:
+                return True
+
+        return False
 
     def getAllPossibleMoves(self):
         moves = []
@@ -80,7 +122,7 @@ class ChessGame:
             for column in range(len(self.ChessBoard[row])):
                 turn = self.ChessBoard[row][column][0]  # 'W' or 'B'
 
-                if (turn == 'W' and self.white_to_move) or (turn == 'B' and not self.white_to_move):
+                if (turn == 'W' and self.whiteToMove) or (turn == 'B' and not self.whiteToMove):
                     current_piece = self.ChessBoard[row][column][1]  # Any given piece.
 
                     if current_piece == 'P':  # Pawn
@@ -106,7 +148,7 @@ class ChessGame:
     def getPawnMoves(self, row, column, moves):
 
         # White Pawn Moves
-        if self.white_to_move:
+        if self.whiteToMove:
             # One or two spaces ahead.
             if self.ChessBoard[row - 1][column] == "--":
                 moves.append(Move((row, column), (row - 1, column), self))
@@ -147,7 +189,7 @@ class ChessGame:
             (0, 1)    # Right
         ]
 
-        enemyColor = 'B' if self.white_to_move else 'W'
+        enemyColor = 'B' if self.whiteToMove else 'W'
 
         for direction in directions:
             for row_count in range(1, 8):
@@ -183,7 +225,7 @@ class ChessGame:
             (2, -1)    # Down two, left one
         ]
 
-        allyColor = 'W' if self.white_to_move else 'B'
+        allyColor = 'W' if self.whiteToMove else 'B'
 
         for direction in directions:
             endRow = row + direction[0]
@@ -203,7 +245,7 @@ class ChessGame:
             (1, 1)     # Down one, right one (Southeast)
         ]
 
-        enemyColor = 'B' if self.white_to_move else 'W'
+        enemyColor = 'B' if self.whiteToMove else 'W'
 
         for direction in directions:
             for row_count in range(1, 8):
@@ -236,14 +278,14 @@ class ChessGame:
             (-1, 0),   # Up one
             (1, 0),    # Down one
             (0, -1),   # Left one
-            (0, -1),   # Right one
+            (0, 1),   # Right one
             (-1, 1),   # Up one, right one
             (-1, -1),  # Up one, left one
             (1, 1),    # Down one, right one
             (1, -1)    # Down one, left one
         ]
 
-        allyColor = 'W' if self.white_to_move else 'B'
+        allyColor = 'W' if self.whiteToMove else 'B'
 
         for direction in directions:
             endRow = row + direction[0]
