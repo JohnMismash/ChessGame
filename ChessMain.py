@@ -114,16 +114,19 @@ def main():
                 # perform this valid move within the Chess game.
                 if len(selected_squares) == 2:
                     move = Move(selected_squares[0], selected_squares[1], gameState)
-                    validMoves = gameState.getValidMoves()
 
                     if move in validMoves:
                         gameState.processMove(move)
                         moveMade = True
 
-                    current_square = ()
-                    selected_squares = []
-                    highlightedSquareRow = None
-                    highlightedSquareColumn = None
+                        current_square = ()
+                        selected_squares = []
+                        highlightedSquareRow = None
+                        highlightedSquareColumn = None
+
+                    # Assumes that a second selection of a piece is a deselection.
+                    else:
+                        selected_squares = [current_square]
 
             # When the 'z' key is pressed, undo the move.
             elif event.type == p.KEYDOWN:
@@ -152,7 +155,7 @@ def main():
 def drawGame(console, game_state, isSquareSelected, highlightedSquareRow, highlightedSquareColumn):
 
     if isSquareSelected:
-        drawBoardHighlight(console, highlightedSquareRow, highlightedSquareColumn)
+        drawBoardHighlight(console, highlightedSquareRow, highlightedSquareColumn, game_state)
 
     else:
         drawBoard(console)
@@ -182,7 +185,7 @@ def drawBoard(console):
 
 
 # This will draw the squares of the Chess Board.
-def drawBoardHighlight(console, highlightedSquareRow, highlightedSquareColumn):
+def drawBoardHighlight(console, highlightedRow, highlightedColumn, game_state):
     # These colors may be changed to be any color scheme of the users choice.
     square_colors = [p.Color("white"), p.Color("dark orange")]
 
@@ -193,11 +196,8 @@ def drawBoardHighlight(console, highlightedSquareRow, highlightedSquareColumn):
     # to a dark color is the 1 index.
     for row in range(DIMENSION):
         for column in range(DIMENSION):
-            # When we add the row and column number and mod by 2, we will know whether that
-            # position should be a light or dark square if there is a remainder or not, and we can use this
-            # remainder of 0 or 1 to access our colors.
-
-            if row == highlightedSquareRow and column == highlightedSquareColumn:
+            # If the current square selected has no piece on it, do not draw a highlight.
+            if row == highlightedRow and column == highlightedColumn and game_state.ChessBoard[row][column] != "--":
                 square_colors = [p.Color("gray"), p.Color("gray")]
                 square_color = square_colors[(row + column) % 2]
 
@@ -205,6 +205,9 @@ def drawBoardHighlight(console, highlightedSquareRow, highlightedSquareColumn):
                 p.draw.rect(console, square_color, (column * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
                 square_colors = [p.Color("white"), p.Color("dark orange")]
 
+            # When we add the row and column number and mod by 2, we will know whether that
+            # position should be a light or dark square if there is a remainder or not, and we can use this
+            # remainder of 0 or 1 to access our colors.
             else:
                 square_color = square_colors[(row + column) % 2]
 

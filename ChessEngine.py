@@ -27,7 +27,7 @@ class ChessGame:
             ["BP", "BP", "BP", "BP", "BP", "BP", "BP", "BP"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["WR", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP"],
             ["WR", "WN", "WB", "WQ", "WK", "WB", "WN", "WR"]
@@ -59,7 +59,9 @@ class ChessGame:
             self.white_to_move = not self.white_to_move
 
     def getValidMoves(self):
-        return self.getAllPossibleMoves()
+        allPossibleMoves = self.getAllPossibleMoves()
+
+        return allPossibleMoves
 
     def getAllPossibleMoves(self):
         moves = []
@@ -72,14 +74,19 @@ class ChessGame:
 
                     if current_piece == 'P':  # Pawn
                         self.getPawnMoves(row, column, moves)
+
                     elif current_piece == 'R':  # Rook
                         self.getRookMoves(row, column, moves)
+
                     elif current_piece == 'N':  # Knight
                         self.getKnightMoves(row, column, moves)
+
                     elif current_piece == 'B':  # Bishop
                         self.getBishopMoves(row, column, moves)
+
                     elif current_piece == 'Q':  # Queen
                         self.getQueenMoves(row, column, moves)
+
                     elif current_piece == 'K':  # King
                         self.getKingMoves(row, column, moves)
 
@@ -154,16 +161,88 @@ class ChessGame:
                     break
 
     def getKnightMoves(self, row, column, moves):
-        pass
+        directions = [
+            (-1, 2),   # Up one, right two
+            (-2, 1),   # Up two, right one
+            (-1, -2),  # Up one, left two
+            (-2, -1),  # Up two, left one
+            (1, 2),    # Down one, right two
+            (2, 1),    # Down two, right one
+            (1, -2),   # Down one, left two
+            (2, -1)    # Down two, left one
+        ]
+
+        allyColor = 'W' if self.white_to_move else 'B'
+
+        for direction in directions:
+            endRow = row + direction[0]
+            endColumn = column + direction[1]
+
+            if 0 <= endRow < 8 and 0 <= endColumn < 8:
+                endPiece = self.ChessBoard[endRow][endColumn]
+
+                if endPiece[0] != allyColor:
+                    moves.append(Move((row, column), (endRow, endColumn), self))
 
     def getBishopMoves(self, row, column, moves):
-        pass
+        directions = [
+            (-1, -1),  # Up one, left one (Northwest)
+            (-1, 1),   # Up one, right one (Northeast)
+            (1, -1),   # Down one, left one (Southwest)
+            (1, 1)     # Down one, right one (Southeast)
+        ]
+
+        enemyColor = 'B' if self.white_to_move else 'W'
+
+        for direction in directions:
+            for row_count in range(1, 8):
+                endRow = row + direction[0] * row_count
+                endColumn = column + direction[1] * row_count
+
+                if 0 <= endRow < 8 and 0 <= endColumn < 8:
+                    endPiece = self.ChessBoard[endRow][endColumn]
+
+                    if endPiece == "--":
+                        moves.append(Move((row, column), (endRow, endColumn), self))
+                    elif endPiece[0] == enemyColor:
+                        moves.append(Move((row, column), (endRow, endColumn), self))
+                        break
+
+                    # Cannot capture friendly pieces.
+                    else:
+                        break
+
+                # Move does not exist within the ChessBoard boundary.
+                else:
+                    break
 
     def getQueenMoves(self, row, column, moves):
-        pass
+        self.getRookMoves(row, column, moves)
+        self.getBishopMoves(row, column, moves)
 
     def getKingMoves(self, row, column, moves):
-        pass
+        directions = [
+            (-1, 0),   # Up one
+            (1, 0),    # Down one
+            (0, -1),   # Left one
+            (0, -1),   # Right one
+            (-1, 1),   # Up one, right one
+            (-1, -1),  # Up one, left one
+            (1, 1),    # Down one, right one
+            (1, -1)    # Down one, left one
+        ]
+
+        allyColor = 'W' if self.white_to_move else 'B'
+
+        for direction in directions:
+            endRow = row + direction[0]
+            endColumn = column + direction[1]
+
+            if 0 <= endRow < 8 and 0 <= endColumn < 8:
+                endPiece = self.ChessBoard[endRow][endColumn]
+
+                if endPiece[0] != allyColor:
+                    moves.append(Move((row, column), (endRow, endColumn), self))
 
 
 # This class represents a single move within the game. It includes representation for rank/file, tracking to which
@@ -203,8 +282,4 @@ class Move:
     # Chess notation specifies that the column/file comes before the row/rank.
     def getRankFile(self, row, column):
         return self.column_to_files[column] + self.rows_to_ranks[row]
-
-    # Determines if a move is valid, and is controlled by the Game state.
-    def isValidMove(self):
-        return True
 
