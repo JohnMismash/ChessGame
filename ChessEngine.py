@@ -27,7 +27,7 @@ class ChessGame:
             ["BP", "BP", "BP", "BP", "BP", "BP", "BP", "BP"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["WR", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP"],
             ["WR", "WN", "WB", "WQ", "WK", "WB", "WN", "WR"]
@@ -66,14 +66,12 @@ class ChessGame:
         for row in range(len(self.ChessBoard)):
             for column in range(len(self.ChessBoard[row])):
                 turn = self.ChessBoard[row][column][0]  # 'W' or 'B'
-                print("Turn: ", turn)
+
                 if (turn == 'W' and self.white_to_move) or (turn == 'B' and not self.white_to_move):
                     current_piece = self.ChessBoard[row][column][1]  # Any given piece.
-                    print("Piece: ", current_piece)
 
                     if current_piece == 'P':  # Pawn
-                        moves = self.getPawnMoves(row, column, moves)
-
+                        self.getPawnMoves(row, column, moves)
                     elif current_piece == 'R':  # Rook
                         self.getRookMoves(row, column, moves)
                     elif current_piece == 'N':  # Knight
@@ -88,6 +86,8 @@ class ChessGame:
         return moves
 
     def getPawnMoves(self, row, column, moves):
+
+        # White Pawn Moves
         if self.white_to_move:
             # One or two spaces ahead.
             if self.ChessBoard[row - 1][column] == "--":
@@ -103,6 +103,7 @@ class ChessGame:
             if row > 0 and column < 7 and self.ChessBoard[row - 1][column + 1][0] == 'B':
                 moves.append(Move((row, column), (row - 1, column + 1), self))
 
+        # Black Pawn Moves
         else:
             # One or two spaces ahead.
             if self.ChessBoard[row + 1][column] == "--":
@@ -121,7 +122,39 @@ class ChessGame:
         return moves
 
     def getRookMoves(self, row, column, moves):
-        pass
+        directions = [
+            (-1, 0),  # Northern Movement
+            (0, -1),  # Western Movement
+            (1, 0),   # Southern Movement
+            (0, 1)    # Eastern Movement
+        ]
+
+        if self.white_to_move:
+            enemyColor = 'B'
+        else:
+            enemyColor = 'W'
+
+        for direction in directions:
+            for row_count in range(1, 8):
+                endRow = row + direction[0] * row_count
+                endColumn = column + direction[1] * row_count
+
+                if 0 <= endRow < 8 and 0 <= endColumn < 8:
+                    endPiece = self.ChessBoard[endRow][endColumn]
+
+                    if endPiece == "--":
+                        moves.append(Move((row, column), (endRow, endColumn), self))
+                    elif endPiece[0] == enemyColor:
+                        moves.append(Move((row, column), (endRow, endColumn), self))
+                        break
+
+                    # Cannot capture friendly pieces.
+                    else:
+                        break
+
+                # Move does not exist within the boundary.
+                else:
+                    break
 
     def getKnightMoves(self, row, column, moves):
         pass
