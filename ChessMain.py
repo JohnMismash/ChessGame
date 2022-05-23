@@ -25,6 +25,7 @@ IMAGES = {}
 # Initialize our pyGame globally, so no methods will rely on this anywhere else in the program.
 p.init()
 
+
 # Initialize the dictionary of Images. We can now access any piece image with IMAGES['WP']
 # for example and each string is represented as the key in our dictionary.
 def loadPieceImages():
@@ -191,9 +192,6 @@ def drawBoardHighlight(console, highlightedRow, highlightedColumn, game_state):
 
     # We know that every board setup will always have a "light" square in the top left corner,
     # regardless of the perspective of white/black.
-
-    # We can also set up our square_colors to that the access to a light color is at the 0 index, and the access
-    # to a dark color is the 1 index.
     for row in range(DIMENSION):
         for column in range(DIMENSION):
             # If the current square selected has no piece on it, do not draw a highlight.
@@ -207,7 +205,7 @@ def drawBoardHighlight(console, highlightedRow, highlightedColumn, game_state):
 
             # When we add the row and column number and mod by 2, we will know whether that
             # position should be a light or dark square if there is a remainder or not, and we can use this
-            # remainder of 0 or 1 to access our colors.
+            # remainder of to access our colors.
             else:
                 square_color = square_colors[(row + column) % 2]
 
