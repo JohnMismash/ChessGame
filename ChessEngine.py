@@ -52,6 +52,9 @@ class ChessGame:
         self.checks = []
         self.inCheckByPiece = False
 
+        # Coordinates for a possible en-passant capture square.
+        self.enPassantPossible = ()
+
     def processMove(self, move):
         if move.movedPiece == "WK":
             self.WK_Location = (move.endRow, move.endColumn)
@@ -63,7 +66,8 @@ class ChessGame:
         self.moveLog.append(move)
         self.whiteToMove = not self.whiteToMove
 
-        return True
+        if move.isPawnPromotion:
+            self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece[0] + 'Q'
 
     # This function will undo a previous move when the 'z' button is pressed.
     # Functionality is set to do nothing if there are no previous moves.
@@ -568,6 +572,13 @@ class Move:
 
         # Unique ID for each move.
         self.moveID = self.startRow * 1000 + self.endRow * 100 + self.startColumn * 10 + self.endColumn
+
+        self.isPawnPromotion = False
+        self.isEnPassant = False
+
+        # Check for pawn promotion.
+        if (self.movedPiece == 'WP' and self.endRow == 0) or (self.movedPiece == 'BP' and self.endRow == 7):
+            self.isPawnPromotion = True
 
     def __eq__(self, other):
         if isinstance(other, Move):
