@@ -50,7 +50,7 @@ class ChessGame:
         # Variables for advanced algorithm.
         self.pins = []
         self.checks = []
-        self.inCheck = False
+        self.inCheckByPiece = False
 
     def processMove(self, move):
         if move.movedPiece == "WK":
@@ -80,42 +80,40 @@ class ChessGame:
             self.ChessBoard[previousMove.endRow][previousMove.endColumn] = previousMove.capturedPiece
             self.whiteToMove = not self.whiteToMove
 
-    # # Naive solution to generating valid moves.
-    # def getValidMoves(self):
-    #     # Generate all possible moves.
-    #     allPossibleMoves = self.getAllPossibleMoves()
-    #
-    #     # Individually make each move, although traverse backwards to avoid skipping elements as some are removed.
-    #     for i in range(len(allPossibleMoves) - 1, -1, -1):
-    #         move = allPossibleMoves[i]
-    #         self.processMove(move)
-    #         self.whiteToMove = not self.whiteToMove
-    #
-    #         if self.inCheck():
-    #             allPossibleMoves.remove(move)
-    #
-    #         self.whiteToMove = not self.whiteToMove
-    #         self.undoMove()
-    #
-    #     # Check for checkmate and stalemate.
-    #     if len(allPossibleMoves) == 0:
-    #         if self.inCheck():
-    #             self.checkMate = True
-    #         else:
-    #             self.staleMate = True
-    #
-    #     else:
-    #         self.checkMate = False
-    #         self.staleMate = False
-    #
-    #     return allPossibleMoves
+    # Naive solution to generating valid moves.
+    def getValidMovesNaive(self):
+        # Generate all possible moves.
+        allPossibleMoves = self.getAllPossibleMoves()
+
+        # Individually make each move, although traverse backwards to avoid skipping elements as some are removed.
+        for i in range(len(allPossibleMoves) - 1, -1, -1):
+            move = allPossibleMoves[i]
+            self.processMove(move)
+            self.whiteToMove = not self.whiteToMove
+
+            if self.inCheck():
+                allPossibleMoves.remove(move)
+
+            self.whiteToMove = not self.whiteToMove
+            self.undoMove()
+
+        # Check for checkmate and stalemate.
+        if len(allPossibleMoves) == 0:
+            if self.inCheck():
+                self.checkMate = True
+            else:
+                self.staleMate = True
+
+        else:
+            self.checkMate = False
+            self.staleMate = False
+
+        return allPossibleMoves
 
     # Advanced solution to generating valid moves.
-    def getValidMoves(self):
+    def getValidMovesAdvanced(self):
         validMoves = []
-        self.inCheck, self.pins, self.checks = self.checkForPinsAndChecks()
-
-        print(self.inCheck, self.pins, self.checks)
+        self.inCheckByPiece, self.pins, self.checks = self.checkForPinsAndChecks()
 
         if self.whiteToMove:
             kingRow = self.WK_Location[0]
@@ -124,7 +122,7 @@ class ChessGame:
             kingRow = self.BK_Location[0]
             kingColumn = self.BK_Location[1]
 
-        if self.inCheck:
+        if self.inCheckByPiece:
             # Check is a single check, user can only block check or move the king.
             if len(self.checks) == 1:
                 validMoves = self.getAllPossibleMoves()
