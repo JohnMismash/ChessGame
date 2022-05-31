@@ -66,6 +66,18 @@ class ChessGame:
         self.moveLog.append(move)
         self.whiteToMove = not self.whiteToMove
 
+        if move.movedPiece[1] == 'P' and abs(move.startRow - move.endRow) == 2:
+            self.enPassantPossible = ((move.startRow + move.endRow) // 2, move.endColumn)
+            print(self.enPassantPossible)
+
+        else:
+            self.enPassantPossible = ()
+
+        # If an EnPassant move, update the board to represent the correct pieces.
+        if move.isEnPassant:
+            self.ChessBoard[move.startRow][move.endColumn] = "--"
+
+        # If a pawn promotion, default the piece to be a queen.
         if move.isPawnPromotion:
             self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece[0] + 'Q'
 
@@ -83,6 +95,16 @@ class ChessGame:
             self.ChessBoard[previousMove.startRow][previousMove.startColumn] = previousMove.movedPiece
             self.ChessBoard[previousMove.endRow][previousMove.endColumn] = previousMove.capturedPiece
             self.whiteToMove = not self.whiteToMove
+
+            # If an EnPassant move, we must update the board accordingly, and restore the possible move.
+            if previousMove.isEnPassant:
+                self.ChessBoard[previousMove.endRow][previousMove.endColumn] = "--"
+                self.ChessBoard[previousMove.startRow][previousMove.endColumn] = previousMove.capturedPiece
+                self.enPassantPossible = (previousMove.endRow, previousMove.endColumn)
+
+            # If a two pawn advance move was undone, then the possible enPassant move must be cleared.
+            if previousMove.movedPiece[1] == 'P' and abs(previousMove.startRow - previousMove.endRow) == 2:
+                self.enPassantPossible = ()
 
     # Naive solution to generating valid moves.
     def getValidMovesNaive(self):
@@ -183,15 +205,16 @@ class ChessGame:
             startRow = self.BK_Location[0]
             startColumn = self.BK_Location[1]
 
+        # Directions are based on a 8 x 8 board, with (0, 0) starting in the top left corner of the board.
         directions = [
-            (-1, 0),  # Up one
-            (0, -1),  # Left one
-            (1, 0),  # Down one
-            (0, 1),  # Right one
+            (-1,  0),  # Up one
+            (0,  -1),  # Left one
+            (1,   0),  # Down one
+            (0,   1),  # Right one
             (-1, -1),  # Up one, left one
-            (-1, 1),  # Up one, right one
-            (1, -1),  # Down one, left one
-            (1, 1),  # Down one, right one
+            (-1,  1),  # Up one, right one
+            (1,  -1),  # Down one, left one
+            (1,   1),  # Down one, right one
         ]
 
         # For each possible direction for the king:
@@ -252,13 +275,13 @@ class ChessGame:
 
         knightMoves = [
             (-2, -1),  # Up two, left one
-            (-2, 1),  # Up two, right one
+            (-2,  1),  # Up two, right one
             (-1, -2),  # Up one, left two
-            (-1, 2),  # Up one, right two
-            (1, -2),  # Down one, left two
-            (1, 2),  # Down one, right two
-            (2, -1),  # Down two, left one
-            (2, 1)  # Down two, right one
+            (-1,  2),  # Up one, right two
+            (1,  -2),  # Down one, left two
+            (1,   2),  # Down one, right two
+            (2,  -1),  # Down two, left one
+            (2,   1)   # Down two, right one
         ]
 
         # Generate knight check conditions.
@@ -344,46 +367,81 @@ class ChessGame:
                 self.pins.remove(self.pins[i])
                 break
 
-        # White Pawn Moves
         if self.whiteToMove:
-            # One or two spaces ahead.
-            if self.ChessBoard[row - 1][column] == "--":
-                # Pin direction is the same direction as where pawn wants to go, and pawn is not pinned.
-                if not piecePinned or pinDirection == (-1, 0):
-                    moves.append(Move((row, column), (row - 1, column), self))
-                    if row == 6 and self.ChessBoard[row - 2][column] == "--":
-                        moves.append(Move((row, column), (row - 2, column), self))
-
-            # Diagonal Left
-            if row > 0 and column > 0 and self.ChessBoard[row - 1][column - 1][0] == 'B':
-                # Pin direction is the same direction as where pawn wants to go, and pawn is not pinned.
-                if not piecePinned or pinDirection == (-1, -1):
-                    moves.append(Move((row, column), (row - 1, column - 1), self))
-
-            # Diagonal Right
-            if row > 0 and column < 7 and self.ChessBoard[row - 1][column + 1][0] == 'B':
-                # Pin direction is the same direction as where pawn wants to go, and pawn is not pinned.
-                if not piecePinned or pinDirection == (-1, 1):
-                    moves.append(Move((row, column), (row - 1, column + 1), self))
-
-        # Black Pawn Moves
+            moveAmount = -1
+            startRow = 6
+            backRow = 0
+            enemyColor = 'B'
         else:
-            # One or two spaces ahead.
-            if self.ChessBoard[row + 1][column] == "--":
-                if not piecePinned or pinDirection == (1, 0):
-                    moves.append(Move((row, column), (row + 1, column), self))
-                    if row == 1 and self.ChessBoard[row + 2][column] == "--":
-                        moves.append(Move((row, column), (row + 2, column), self))
+            moveAmount = 1
+            startRow = 1
+            backRow = 7
+            enemyColor = 'W'
 
-            # Diagonal Left
-            if row < 7 and column > 0 and self.ChessBoard[row + 1][column - 1][0] == 'W':
-                if not piecePinned or pinDirection == (1, -1):
-                    moves.append(Move((row, column), (row + 1, column - 1), self))
+        pawnPromotion = False
 
-            # Diagonal Right
-            if row < 7 and column < 7 and self.ChessBoard[row + 1][column + 1][0] == 'W':
-                if not piecePinned or pinDirection == (1, 1):
-                    moves.append(Move((row, column), (row + 1, column + 1), self))
+        # One or two spaces ahead.
+        if self.ChessBoard[row + moveAmount][column] == "--":
+            # Pin direction is the same direction as where pawn wants to go, and pawn is not pinned.
+            if not piecePinned or pinDirection == (moveAmount, 0):
+                if row + moveAmount == backRow:
+                    pawnPromotion = True
+
+                moves.append(Move((row, column), (row + moveAmount, column), self,
+                                  isPawnPromotion=pawnPromotion))
+
+                if row == startRow and self.ChessBoard[row + 2 * moveAmount][column] == "--":
+                    moves.append(Move((row, column), (row + 2 * moveAmount, column), self))
+
+        # Diagonal Left
+        if column > 0:
+            # Pin direction is the same direction as where pawn wants to go, and pawn is not pinned.
+            if not piecePinned or pinDirection == (moveAmount, -1):
+                if self.ChessBoard[row -+ moveAmount][column - 1][0] == enemyColor:
+                    if row + moveAmount == backRow:
+                        pawnPromotion = True
+
+                    moves.append(Move((row, column), (row + moveAmount, column - 1), self,
+                                      isPawnPromotion=pawnPromotion))
+
+                if (row + moveAmount, column - 1) == self.enPassantPossible:
+                    moves.append(
+                        Move((row, column), (row + moveAmount, column - 1), self,
+                             isEnPassantMove=True))
+
+        # Diagonal Right
+        if column < 7:
+            # Pin direction is the same direction as where pawn wants to go, and pawn is not pinned.
+            if not piecePinned or pinDirection == (moveAmount, 1):
+                if self.ChessBoard[row + moveAmount][column + 1][0] == enemyColor:
+                    if row + moveAmount == backRow:
+                        pawnPromotion = True
+
+                    moves.append(Move((row, column), (row + moveAmount, column + 1), self,
+                                      isPawnPromotion=pawnPromotion))
+
+                if (row + moveAmount, column + 1) == self.enPassantPossible:
+                    moves.append(Move((row, column), (row + moveAmount, column + 1), self,
+                                      isEnPassantMove=True))
+
+        # # Black Pawn Moves
+        # else:
+        #     # One or two spaces ahead.
+        #     if self.ChessBoard[row + 1][column] == "--":
+        #         if not piecePinned or pinDirection == (1, 0):
+        #             moves.append(Move((row, column), (row + 1, column), self))
+        #             if row == 1 and self.ChessBoard[row + 2][column] == "--":
+        #                 moves.append(Move((row, column), (row + 2, column), self))
+        #
+        #     # Diagonal Left
+        #     if row < 7 and column > 0 and self.ChessBoard[row + 1][column - 1][0] == 'W':
+        #         if not piecePinned or pinDirection == (1, -1):
+        #             moves.append(Move((row, column), (row + 1, column - 1), self))
+        #
+        #     # Diagonal Right
+        #     if row < 7 and column < 7 and self.ChessBoard[row + 1][column + 1][0] == 'W':
+        #         if not piecePinned or pinDirection == (1, 1):
+        #             moves.append(Move((row, column), (row + 1, column + 1), self))
 
         return moves
 
@@ -560,7 +618,7 @@ class Move:
     files_to_columns = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
     column_to_files = {value: key for key, value in files_to_columns.items()}
 
-    def __init__(self, starting_square, ending_square, game_state):
+    def __init__(self, starting_square, ending_square, game_state, isPawnPromotion=False, isEnPassantMove=False):
         self.startRow = starting_square[0]
         self.startColumn = starting_square[1]
 
@@ -573,12 +631,14 @@ class Move:
         # Unique ID for each move.
         self.moveID = self.startRow * 1000 + self.endRow * 100 + self.startColumn * 10 + self.endColumn
 
-        self.isPawnPromotion = False
-        self.isEnPassant = False
-
         # Check for pawn promotion.
-        if (self.movedPiece == 'WP' and self.endRow == 0) or (self.movedPiece == 'BP' and self.endRow == 7):
-            self.isPawnPromotion = True
+        self.isPawnPromotion = isPawnPromotion
+
+        # Check for En Passant.
+        self.isEnPassant = isEnPassantMove
+
+        if self.isEnPassant:
+            self.capturedPiece = 'BP' if self.movedPiece == 'WP' else 'WP'
 
     def __eq__(self, other):
         if isinstance(other, Move):
