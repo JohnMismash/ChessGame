@@ -424,25 +424,6 @@ class ChessGame:
                     moves.append(Move((row, column), (row + moveAmount, column + 1), self,
                                       isEnPassantMove=True))
 
-        # # Black Pawn Moves
-        # else:
-        #     # One or two spaces ahead.
-        #     if self.ChessBoard[row + 1][column] == "--":
-        #         if not piecePinned or pinDirection == (1, 0):
-        #             moves.append(Move((row, column), (row + 1, column), self))
-        #             if row == 1 and self.ChessBoard[row + 2][column] == "--":
-        #                 moves.append(Move((row, column), (row + 2, column), self))
-        #
-        #     # Diagonal Left
-        #     if row < 7 and column > 0 and self.ChessBoard[row + 1][column - 1][0] == 'W':
-        #         if not piecePinned or pinDirection == (1, -1):
-        #             moves.append(Move((row, column), (row + 1, column - 1), self))
-        #
-        #     # Diagonal Right
-        #     if row < 7 and column < 7 and self.ChessBoard[row + 1][column + 1][0] == 'W':
-        #         if not piecePinned or pinDirection == (1, 1):
-        #             moves.append(Move((row, column), (row + 1, column + 1), self))
-
         return moves
 
     def getRookMoves(self, row, column, moves):
@@ -458,10 +439,10 @@ class ChessGame:
                     break
 
         directions = [
-            (-1, 0),  # Up
-            (0, -1),  # Left
-            (1, 0),  # Down
-            (0, 1)  # Right
+            (-1,  0),  # Up
+            (0,  -1),  # Left
+            (1,   0),  # Down
+            (0,   1)   # Right
         ]
 
         enemyColor = 'B' if self.whiteToMove else 'W'
@@ -499,14 +480,14 @@ class ChessGame:
                 break
 
         directions = [
-            (-1, 2),  # Up one, right two
-            (-2, 1),  # Up two, right one
+            (-1,  2),  # Up one, right two
+            (-2,  1),  # Up two, right one
             (-1, -2),  # Up one, left two
             (-2, -1),  # Up two, left one
-            (1, 2),  # Down one, right two
-            (2, 1),  # Down two, right one
-            (1, -2),  # Down one, left two
-            (2, -1)  # Down two, left one
+            (1,   2),  # Down one, right two
+            (2,   1),  # Down two, right one
+            (1,  -2),  # Down one, left two
+            (2,  -1)   # Down two, left one
         ]
 
         allyColor = 'W' if self.whiteToMove else 'B'
@@ -572,14 +553,14 @@ class ChessGame:
 
     def getKingMoves(self, row, column, moves):
         directions = [
-            (-1, 0),  # Up one
-            (1, 0),  # Down one
-            (0, -1),  # Left one
-            (0, 1),  # Right one
-            (-1, 1),  # Up one, right one
+            (-1,  0),  # Up one
+            (1,   0),  # Down one
+            (0,  -1),  # Left one
+            (0,   1),  # Right one
+            (-1,  1),  # Up one, right one
             (-1, -1),  # Up one, left one
-            (1, 1),  # Down one, right one
-            (1, -1)  # Down one, left one
+            (1,   1),  # Down one, right one
+            (1,  -1)   # Down one, left one
         ]
 
         allyColor = 'W' if self.whiteToMove else 'B'
