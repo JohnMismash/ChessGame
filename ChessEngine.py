@@ -37,9 +37,6 @@ class ChessGame:
 
         self.moveLog = []
 
-        # self.WK_moved = False
-        # self.BK_moved = False
-
         self.WK_Location = (7, 4)
         self.BK_Location = (0, 4)
 
@@ -54,6 +51,10 @@ class ChessGame:
 
         # Coordinates for a possible en-passant capture square.
         self.enPassantPossible = ()
+
+        self.currentCastleRight = CastleRights(True, True, True, True)
+        self.castleRightsLog = [CastleRights(self.currentCastleRight.WKs, self.currentCastleRight.BKs,
+                                             self.currentCastleRight.WQs, self.currentCastleRight.BQs)]
 
     def processMove(self, move):
         if move.movedPiece == "WK":
@@ -81,6 +82,9 @@ class ChessGame:
         if move.isPawnPromotion:
             self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece[0] + 'Q'
 
+        # Update castle rights when a rook or king makes a move.
+        self.updateCastleRights(move)
+
     # This function will undo a previous move when the 'z' button is pressed.
     # Functionality is set to do nothing if there are no previous moves.
     def undoMove(self):
@@ -105,6 +109,41 @@ class ChessGame:
             # If a two pawn advance move was undone, then the possible enPassant move must be cleared.
             if previousMove.movedPiece[1] == 'P' and abs(previousMove.startRow - previousMove.endRow) == 2:
                 self.enPassantPossible = ()
+
+    def updateCastleRights(self, move):
+        if move.movedPiece[1] == 'R':
+            # White Rook
+            if self.whiteToMove:
+                if move.startRow == 7:
+                    # Left-side Rook
+                    if move.startColumn == 0:
+                        self.currentCastleRight.WQs = False
+
+                    # Right-side Rook
+                    elif move.startColumn == 7:
+                        self.currentCastleRight.WKs = False
+
+            # Black Rook
+            else:
+                if move.startRow == 0:
+                    # Left-side Rook
+                    if move.startColumn == 0:
+                        self.currentCastleRight.BQs = False
+
+                    # Right-side Rook
+                    elif move.startColumn == 7:
+                        self.currentCastleRight.BKs = False
+
+        elif move.movedPiece[1] == 'K':
+            # White King
+            if self.whiteToMove:
+                self.currentCastleRight.WKs = False
+                self.currentCastleRight.WQs = False
+
+            # Black King
+            else:
+                self.currentCastleRight.BKs = False
+                self.currentCastleRight.BQs = False
 
     # Naive solution to generating valid moves.
     def getValidMovesNaive(self):
@@ -182,6 +221,9 @@ class ChessGame:
             # Check is a double (or more) check, user must move the king.
             else:
                 self.getKingMoves(kingRow, kingColumn, validMoves)
+
+                if len(validMoves) == 0:
+                    self.checkMate = True
 
         else:
             validMoves = self.getAllPossibleMoves()
@@ -275,13 +317,13 @@ class ChessGame:
 
         knightMoves = [
             (-2, -1),  # Up two, left one
-            (-2,  1),  # Up two, right one
+            (-2, 1),  # Up two, right one
             (-1, -2),  # Up one, left two
-            (-1,  2),  # Up one, right two
-            (1,  -2),  # Down one, left two
-            (1,   2),  # Down one, right two
-            (2,  -1),  # Down two, left one
-            (2,   1)   # Down two, right one
+            (-1, 2),  # Up one, right two
+            (1, -2),  # Down one, left two
+            (1, 2),  # Down one, right two
+            (2, -1),  # Down two, left one
+            (2, 1)  # Down two, right one
         ]
 
         # Generate knight check conditions.
@@ -397,7 +439,7 @@ class ChessGame:
         if column > 0:
             # Pin direction is the same direction as where pawn wants to go, and pawn is not pinned.
             if not piecePinned or pinDirection == (moveAmount, -1):
-                if self.ChessBoard[row -+ moveAmount][column - 1][0] == enemyColor:
+                if self.ChessBoard[row - + moveAmount][column - 1][0] == enemyColor:
                     if row + moveAmount == backRow:
                         pawnPromotion = True
 
@@ -439,10 +481,10 @@ class ChessGame:
                     break
 
         directions = [
-            (-1,  0),  # Up
-            (0,  -1),  # Left
-            (1,   0),  # Down
-            (0,   1)   # Right
+            (-1, 0),  # Up
+            (0, -1),  # Left
+            (1, 0),  # Down
+            (0, 1)  # Right
         ]
 
         enemyColor = 'B' if self.whiteToMove else 'W'
@@ -480,14 +522,14 @@ class ChessGame:
                 break
 
         directions = [
-            (-1,  2),  # Up one, right two
-            (-2,  1),  # Up two, right one
+            (-1, 2),  # Up one, right two
+            (-2, 1),  # Up two, right one
             (-1, -2),  # Up one, left two
             (-2, -1),  # Up two, left one
-            (1,   2),  # Down one, right two
-            (2,   1),  # Down two, right one
-            (1,  -2),  # Down one, left two
-            (2,  -1)   # Down two, left one
+            (1, 2),  # Down one, right two
+            (2, 1),  # Down two, right one
+            (1, -2),  # Down one, left two
+            (2, -1)  # Down two, left one
         ]
 
         allyColor = 'W' if self.whiteToMove else 'B'
@@ -553,14 +595,14 @@ class ChessGame:
 
     def getKingMoves(self, row, column, moves):
         directions = [
-            (-1,  0),  # Up one
-            (1,   0),  # Down one
-            (0,  -1),  # Left one
-            (0,   1),  # Right one
-            (-1,  1),  # Up one, right one
+            (-1, 0),  # Up one
+            (1, 0),  # Down one
+            (0, -1),  # Left one
+            (0, 1),  # Right one
+            (-1, 1),  # Up one, right one
             (-1, -1),  # Up one, left one
-            (1,   1),  # Down one, right one
-            (1,  -1)   # Down one, left one
+            (1, 1),  # Down one, right one
+            (1, -1)  # Down one, left one
         ]
 
         allyColor = 'W' if self.whiteToMove else 'B'
@@ -589,6 +631,15 @@ class ChessGame:
                         self.BK_Location = (row, column)
 
 
+# This class represents
+class CastleRights:
+    def __init__(self, WKs, BKs, WQs, BQs):
+        self.WKs = WKs
+        self.BKs = BKs
+        self.WQs = WQs
+        self.BQs = BQs
+
+
 # This class represents a single move within the game. It includes representation for rank/file, tracking to which
 # piece recently moved, as well as which piece was recently captured (or a piece moves to an empty square).
 class Move:
@@ -599,7 +650,8 @@ class Move:
     files_to_columns = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
     column_to_files = {value: key for key, value in files_to_columns.items()}
 
-    def __init__(self, starting_square, ending_square, game_state, isPawnPromotion=False, isEnPassantMove=False):
+    def __init__(self, starting_square, ending_square, game_state, isPawnPromotion=False, isEnPassantMove=False,
+                 isCastleMove=False):
         self.startRow = starting_square[0]
         self.startColumn = starting_square[1]
 
@@ -620,6 +672,9 @@ class Move:
 
         if self.isEnPassant:
             self.capturedPiece = 'BP' if self.movedPiece == 'WP' else 'WP'
+
+        # Check for Castling.
+        self.isCastling = isCastleMove
 
     def __eq__(self, other):
         if isinstance(other, Move):
