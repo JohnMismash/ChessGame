@@ -54,7 +54,7 @@ def main():
     gameState = ChessGame()
 
     # Returns a list of valid moves at the beginning of the game.
-    validMoves = gameState.getValidMovesAdvanced()
+    validMoves = gameState.getValidMovesNaive()
 
     # Flag variable for when a move is made.
     moveMade = False
@@ -139,7 +139,7 @@ def main():
 
         # If a move was just made, we now want to update the list of possible valid moves.
         if moveMade:
-            validMoves = gameState.getValidMovesAdvanced()
+            validMoves = gameState.getValidMovesNaive()
             moveMade = False
 
         # If a piece is selected, we can redraw the game to reflect a highlighted square.
