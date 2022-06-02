@@ -30,7 +30,7 @@ class ChessGame:
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP"],
-            ["WR", "--", "--", "--", "WK", "WB", "WN", "WR"]
+            ["WR", "WN", "WB", "WQ", "WK", "WB", "WN", "WR"]
         ]
 
         self.whiteToMove = True
@@ -693,7 +693,7 @@ class ChessGame:
                 moves.append(Move((row, column), (row, column + 2), self, isCastleMove=True))
 
     def getQueenSideCastleMoves(self, row, column, moves, allyColor):
-        if self.ChessBoard[row][column - 1] == "--" and self.ChessBoard[row][column + 2] == "--" \
+        if self.ChessBoard[row][column - 1] == "--" and self.ChessBoard[row][column - 2] == "--" \
                 and self.ChessBoard[row][column - 3]:
             if not self.squareUnderAttack(row, column - 1) and not self.squareUnderAttack(row, column - 2):
                 moves.append(Move((row, column), (row, column - 2), self, isCastleMove=True))
