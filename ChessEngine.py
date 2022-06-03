@@ -191,11 +191,6 @@ class ChessGame:
         else:
             self.getCastleMoves(self.BK_Location[0], self.BK_Location[1], allPossibleMoves, not self.whiteToMove)
 
-        entry = self.castleRightsLog[-1]
-        print("Turn: ", self.whiteToMove, "\n",
-              "WKs: ", entry.WKs, "\n", "WQs: ", entry.WQs, "\n",
-              "BKs: ", entry.BKs, "\n", "BQs: ", entry.BQs, "\n")
-
         # Individually make each move, although traverse backwards to avoid skipping elements as some are removed.
         for i in range(len(allPossibleMoves) - 1, -1, -1):
             move = allPossibleMoves[i]
