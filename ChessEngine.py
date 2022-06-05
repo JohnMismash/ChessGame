@@ -41,8 +41,8 @@ class ChessGame:
         self.BK_Location = (0, 4)
 
         # Variables for the naive and advanced algorithm.
-        self.checkMate = False
-        self.staleMate = False
+        self.checkmate = False
+        self.stalemate = False
 
         # Variables for advanced algorithm.
         self.pins = []
@@ -206,13 +206,15 @@ class ChessGame:
         # Check for checkmate and stalemate.
         if len(allPossibleMoves) == 0:
             if self.inCheck():
-                self.checkMate = True
+                self.checkmate = True
+                self.stalemate = False
             else:
-                self.staleMate = True
+                self.stalemate = True
+                self.checkmate = False
 
         else:
-            self.checkMate = False
-            self.staleMate = False
+            self.checkmate = False
+            self.stalemate = False
 
         self.enPassantPossible = tempEnPassantPossible
         self.currentCastleRight = tempCastleRights
