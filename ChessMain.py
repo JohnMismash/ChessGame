@@ -7,6 +7,7 @@ import pygame as p
 
 import ChessEngine
 from ChessEngine import ChessGame, Move
+import ChessAI
 
 # Width/Height of the chess board.
 # Resolution can be set to higher with a Width/Height of 400.
@@ -70,32 +71,34 @@ def main():
     loadPieceImages()
 
     # Checks if the console has been closed.
-    game_is_running = True
+    gameIsRunning = True
 
     currentSquare = ()
-    selected_squares = []
+    selectedSquares = []
 
     # Draw the initial game board and pieces.
     drawGame(console, gameState, validMoves, currentSquare)
 
     gameOver = False
 
-    while game_is_running:
+    
+
+    while gameIsRunning:
         for event in p.event.get():
             if event.type == p.QUIT:
-                game_is_running = False
+                gameIsRunning = False
 
             # If there is a event where a mouse is clicked, we can capture the (x, y)
             # coordinates of where the mouse was clicked.
             elif event.type == p.MOUSEBUTTONDOWN:
                 if not gameOver:
-                    click_location = p.mouse.get_pos()
+                    clickLocation = p.mouse.get_pos()
 
                     # Since our x,y coordinates are now stored in an array, we can access this array and capture the row
                     # and column respective to where they clicked.
                     # NOTE: Each row and column will start at zero, unlike a representation of an actual chess board.
-                    click_column = click_location[0] // SQUARE_SIZE
-                    click_row = click_location[1] // SQUARE_SIZE
+                    click_column = clickLocation[0] // SQUARE_SIZE
+                    click_row = clickLocation[1] // SQUARE_SIZE
 
                     # If the piece has already been selected, we do not want to say this is a valid move,
                     # so we can set our selected square variable to be empty to signify a deselection of the piece.
@@ -104,16 +107,16 @@ def main():
                         currentSquare = (click_row, click_column)
 
                         # Keeps track of the first and second clicks that a player makes.
-                        selected_squares.append(currentSquare)
+                        selectedSquares.append(currentSquare)
 
                     else:
                         currentSquare = ()
-                        selected_squares = []
+                        selectedSquares = []
 
                     # If the user has made a valid second click to a new square, we want to now
                     # perform this valid move within the Chess game.
-                    if len(selected_squares) == 2:
-                        move = Move(selected_squares[0], selected_squares[1], gameState)
+                    if len(selectedSquares) == 2:
+                        move = Move(selectedSquares[0], selectedSquares[1], gameState)
 
                         for i in range(len(validMoves)):
                             if move == validMoves[i]:
@@ -123,11 +126,11 @@ def main():
                                 animate = True
 
                                 currentSquare = ()
-                                selected_squares = []
+                                selectedSquares = []
 
                         # Assumes that a second selection of a piece is a deselection.
                         if not moveMade:
-                            selected_squares = [currentSquare]
+                            selectedSquares = [currentSquare]
 
             elif event.type == p.KEYDOWN:
                 # When the 'z' key is pressed, undo the move.
@@ -141,7 +144,7 @@ def main():
                     gameState = ChessEngine.ChessGame()
                     validMoves = gameState.getValidMovesNaive()
                     currentSquare = ()
-                    selected_squares = []
+                    selectedSquares = []
                     moveMade = False
                     animate = False
 
@@ -245,10 +248,9 @@ def animateMove(console, move, gameState, clock):
 
     # Frames to move one square.
     framesPerSquare = 10
-
     frameCount = framesPerSquare * (abs(deltaRow) + abs(deltaColumn))
 
-    for frame in range(frameCount + 1):  # 0 - 30
+    for frame in range(frameCount + 1):
         row, column = (move.startRow + deltaRow * frame / frameCount,
                        move.startColumn + deltaColumn * frame / frameCount)
 
@@ -268,11 +270,14 @@ def animateMove(console, move, gameState, clock):
 
 
 def drawText(console, message):
-    font = p.font.SysFont("Helvitca", 32, True, False)
-    textObj = font.render(message, 0, p.Color("Orange"))
+    font = p.font.SysFont("Helvetica", 32, True, False)
+    textObj = font.render(message, 0, p.Color("Black"))
     textLocation = p.Rect(0, 0, WIDTH, HEIGHT).move(WIDTH / 2 - textObj.get_width() / 2,
                                                     HEIGHT / 2 - textObj.get_height() / 2)
     console.blit(textObj, textLocation)
+
+    textObj = font.render(message, 0, p.Color("Red"))
+    console.blit(textObj, textLocation.move(2, 2))
 
 
 if __name__ == "__main__":
