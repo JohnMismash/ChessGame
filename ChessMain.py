@@ -4,10 +4,9 @@
 # This ChessMain file will display the current game state and handle any user input.
 
 import pygame as p
-
 import ChessEngine
-from ChessEngine import ChessGame, Move
 import ChessAI
+
 
 # Width/Height of the chess board.
 # Resolution can be set to higher with a Width/Height of 400.
@@ -56,7 +55,7 @@ def main():
 
     # Create a "blank" game state that will allow for all the pieces to be in their
     # respective starting position.
-    gameState = ChessGame()
+    gameState = ChessEngine.ChessGame()
 
     # Returns a list of valid moves at the beginning of the game.
     validMoves = gameState.getValidMovesNaive()
@@ -81,9 +80,15 @@ def main():
 
     gameOver = False
 
-    
+    # True if human is playing white, False if AI is playing white.
+    playerOne = False
+
+    # True is human is playing black, False if AI is playing black.
+    playerTwo = False
 
     while gameIsRunning:
+        isHumanTurn = (gameState.whiteToMove and playerOne) or (not gameState.whiteToMove and playerTwo)
+
         for event in p.event.get():
             if event.type == p.QUIT:
                 gameIsRunning = False
@@ -91,7 +96,7 @@ def main():
             # If there is a event where a mouse is clicked, we can capture the (x, y)
             # coordinates of where the mouse was clicked.
             elif event.type == p.MOUSEBUTTONDOWN:
-                if not gameOver:
+                if not gameOver and isHumanTurn:
                     clickLocation = p.mouse.get_pos()
 
                     # Since our x,y coordinates are now stored in an array, we can access this array and capture the row
@@ -116,7 +121,7 @@ def main():
                     # If the user has made a valid second click to a new square, we want to now
                     # perform this valid move within the Chess game.
                     if len(selectedSquares) == 2:
-                        move = Move(selectedSquares[0], selectedSquares[1], gameState)
+                        move = ChessEngine.Move(selectedSquares[0], selectedSquares[1], gameState)
 
                         for i in range(len(validMoves)):
                             if move == validMoves[i]:
@@ -148,6 +153,13 @@ def main():
                     moveMade = False
                     animate = False
 
+        # Let AI find next move.
+        if not gameOver and not isHumanTurn:
+            move = ChessAI.findRandomMove(validMoves)
+            gameState.processMove(move)
+            moveMade = True
+            animate = True
+
         # If a move was just made, we now want to update the list of possible valid moves.
         if moveMade:
             if animate:
@@ -163,7 +175,6 @@ def main():
 
             if gameState.whiteToMove:
                 drawText(console, "Black wins by checkmate!")
-
             else:
                 drawText(console, "White wins by checkmate!")
 
