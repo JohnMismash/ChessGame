@@ -1,5 +1,5 @@
 # John (Jack) Mismash
-# 5/7/2021
+# 3/15/23
 
 """
 This ChessEngine will maintain and support the current state of the game. It will provide
@@ -8,29 +8,141 @@ in the current game.
 """
 
 
-# This chess board is represented as a 8x8 two dimensional (2D) list.
-# Each element of this list has two characters:
-# The first character represents whether the piece in the game is White/Black.
-# The second character represents the type of piece.
-# If an element contains "--", then this represents a empty space on the board.
-# The empty space square with "--" can still be processed as a string with two characters.
+class CastleRights:
+    """
+    This class represents the Castling rights for the White and Black pieces.
+    """
 
-# First Character: W - White, B - Black
-# Second Character: R - Rook, N - Knight, Q - Queen, K - King, B - Bishop, P - Pawn
+    def __init__(self, WKs: bool, BKs: bool, WQs: bool, BQs: bool):
+        self.WKs: bool = WKs
+        self.BKs: bool = BKs
+        self.WQs: bool = WQs
+        self.BQs: bool = BQs
 
-# This class also maintains a record of who's turn it is to move, as well as a move log to track all of
-# the moved within the game.
+
+class Move:
+    """
+    This class represents a single move within the game.
+    It includes representation for rank/file, which piece was recently moved, and which piece was recently captured.
+    """
+
+    # This will allow us to represent our rows and columns in rank/file notation.
+    ranks_to_rows = {"1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1, "8": 0}
+    rows_to_ranks = {value: key for key, value in ranks_to_rows.items()}
+
+    files_to_columns = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
+    column_to_files = {value: key for key, value in files_to_columns.items()}
+
+    def __init__(self, starting_square, ending_square, game_state,
+                 isPawnPromotion=False,
+                 isEnPassantMove=False,
+                 isCastleMove=False):
+
+        self.startRow = starting_square[0]
+        self.startColumn = starting_square[1]
+
+        self.endRow = ending_square[0]
+        self.endColumn = ending_square[1]
+
+        self.movedPiece = game_state.ChessBoard[self.startRow][self.startColumn]
+        self.capturedPiece = game_state.ChessBoard[self.endRow][self.endColumn]
+
+        # Unique ID for each move.
+        self.moveID = self.startRow * 1000 + self.endRow * 100 + self.startColumn * 10 + self.endColumn
+
+        # Check for pawn promotion.
+        self.isPawnPromotion = isPawnPromotion
+
+        # Check for En Passant.
+        self.isEnPassant = isEnPassantMove
+
+        if self.isEnPassant:
+            self.capturedPiece = 'BP' if self.movedPiece == 'WP' else 'WP'
+
+        # Check for Castling.
+        self.isCastleMove = isCastleMove
+
+    def __eq__(self, other):
+        """
+        Checks if this move is equivalent to another move based on its uniquely generated ID.
+
+        :param other: The other move to compare against.
+        :type other: Move
+        :returns:
+            True: Returns True if the move is equivalent to another move.
+            False: Returns False if the move is nonequivalent to another move.
+        :rtype: bool
+        """
+
+        if isinstance(other, Move):
+            if self.moveID == other.moveID:
+                return True
+
+        return False
+
+    # Produces the necessary chess notation for the move log.
+    def getChessNotation(self):
+        """
+        Generates the necessary chess notation for the move log.
+
+        :return: The generated chess notation of a move.
+        :rtype: str
+        """
+
+        return self.getRankFile(self.startRow, self.startColumn) + self.getRankFile(self.endRow, self.endColumn)
+
+    # Chess notation specifies that the column/file comes before the row/rank.
+    def getRankFile(self, row: int, column: int):
+        """
+        Generates the rank/file notation given a single row and column.
+
+        :param row: The current row of the move.
+        :type row: int
+        :param column: The current column of the move.
+        :type column: int
+        :return: The generated chess notation of a row and column.
+        :rtype: str
+        """
+
+        return self.column_to_files[column] + self.rows_to_ranks[row]
+
+
 class ChessGame:
+    """
+    This class represents a single Chess game.
+    """
+
     def __init__(self):
+
+        # The ChessBoard is represented as a 8x8 two dimensional (2D) list with two-character string elements.
+        # Elements with "--" represent an empty space on the board with no piece.
+
+        # The first char is the piece color in the game:
+        # 'W' - White or 'B' - Black.
+
+        # The second char is the piece type:
+        # 'R' - Rook, 'N' - Knight, 'Q' - Queen, 'K' - King, 'B' - Bishop, and 'P' - Pawn
+
+        # self.ChessBoard = [
+        #     ["BR", "BN", "BB", "BQ", "BK", "BB", "BN", "BR"],
+        #     ["BP", "BP", "BP", "BP", "BP", "BP", "BP", "BP"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["--", "--", "--", "--", "--", "--", "--", "--"],
+        #     ["WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP"],
+        #     ["WR", "WN", "WB", "WQ", "WK", "WB", "WN", "WR"]
+        # ]
+
         self.ChessBoard = [
-            ["BR", "BN", "BB", "BQ", "BK", "BB", "BN", "BR"],
-            ["BP", "BP", "BP", "BP", "BP", "BP", "BP", "BP"],
+            ["--", "--", "--", "BK", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "WK", "--", "--", "--", "WQ"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP"],
-            ["WR", "WN", "WB", "WQ", "WK", "WB", "WN", "WR"]
+            ["--", "--", "--", "--", "--", "--", "--", "--"]
         ]
 
         self.whiteToMove = True
@@ -56,37 +168,50 @@ class ChessGame:
         self.castleRightsLog = [CastleRights(self.currentCastleRight.WKs, self.currentCastleRight.BKs,
                                              self.currentCastleRight.WQs, self.currentCastleRight.BQs)]
 
-    def processMove(self, move):
+    def processMove(self, move: Move):
+        """
+        Processes a single move, including player turn, castling rights, and updating the move log.
+
+        :param move: The user selected move.
+        :return: None
+        """
+
         if move.movedPiece == "WK":
             self.WK_Location = (move.endRow, move.endColumn)
+
         elif move.movedPiece == "BK":
             self.BK_Location = (move.endRow, move.endColumn)
 
+        # Remove the piece from its starting location.
         self.ChessBoard[move.startRow][move.startColumn] = "--"
         self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece
+
         self.moveLog.append(move)
+
         self.whiteToMove = not self.whiteToMove
 
+        # Check if the move made creates an En Passant situation.
         if move.movedPiece[1] == 'P' and abs(move.startRow - move.endRow) == 2:
             self.enPassantPossible = ((move.startRow + move.endRow) // 2, move.endColumn)
+
         else:
             self.enPassantPossible = ()
 
-        # If an EnPassant move, update the board to represent the correct pieces.
+        # If the move is an EnPassant move, update the board to represent the correct pieces.
         if move.isEnPassant:
             self.ChessBoard[move.startRow][move.endColumn] = "--"
 
-        # If a pawn promotion, default the piece to be a queen.
+        # If the move is a pawn promotion, default the piece to be a queen.
+        # TODO: Update pawn promotion to include Knight, Bishop and Rook.
         if move.isPawnPromotion:
             self.ChessBoard[move.endRow][move.endColumn] = move.movedPiece[0] + 'Q'
 
         if move.isCastleMove:
-            # King Side Castle
+            # Check if the move is a King or Queen side Castle.
             if move.endColumn - move.startColumn == 2:
                 self.ChessBoard[move.endRow][move.endColumn - 1] = self.ChessBoard[move.endRow][move.endColumn + 1]
                 self.ChessBoard[move.endRow][move.endColumn + 1] = "--"
 
-            # Queen Side Castle
             else:
                 self.ChessBoard[move.endRow][move.endColumn + 1] = self.ChessBoard[move.endRow][move.endColumn - 2]
                 self.ChessBoard[move.endRow][move.endColumn - 2] = "--"
@@ -96,14 +221,18 @@ class ChessGame:
         self.castleRightsLog.append(CastleRights(self.currentCastleRight.WKs, self.currentCastleRight.BKs,
                                                  self.currentCastleRight.WQs, self.currentCastleRight.BQs))
 
-    # This function will undo a previous move when the 'z' button is pressed.
-    # Functionality is set to do nothing if there are no previous moves.
     def undoMove(self):
+        """
+        Undoes a single previously processed move when the 'z' key is pressed.
+        Assumes that there is a previous processed move to undo.
+        """
+
         if len(self.moveLog) != 0:
             previousMove = self.moveLog.pop()
 
             if previousMove.movedPiece == "WK":
                 self.WK_Location = (previousMove.startRow, previousMove.startColumn)
+
             elif previousMove.movedPiece == "BK":
                 self.BK_Location = (previousMove.startRow, previousMove.startColumn)
 
@@ -139,6 +268,7 @@ class ChessGame:
 
                     # Remove Rook.
                     self.ChessBoard[previousMove.endRow][previousMove.endColumn - 1] = "--"
+
                 # Queen Side Castle
                 else:
                     # Fix Rook placement.
@@ -148,37 +278,18 @@ class ChessGame:
                     # Remove Rook.
                     self.ChessBoard[previousMove.endRow][previousMove.endColumn + 1] = "--"
 
-    def updateCastleRights(self, move):
-        if move.movedPiece == "WR":
-            # White Rook
-            if move.startRow == 7:
-                # Left-side Rook
-                if move.startColumn == 0:
-                    self.currentCastleRight.WQs = False
-                elif move.startColumn == 7:
-                    self.currentCastleRight.WKs = False
+        self.checkmate = False
+        self.stalemate = False
 
-        elif move.movedPiece == "BR":
-            # Black Rook
-            if move.startRow == 0:
-                # Left-side Rook
-                if move.startColumn == 0:
-                    self.currentCastleRight.BQs = False
-                elif move.startColumn == 7:
-                    self.currentCastleRight.BKs = False
-
-        elif move.movedPiece == "WK":
-            # White King
-            self.currentCastleRight.WKs = False
-            self.currentCastleRight.WQs = False
-
-            # Black King
-        elif move.movedPiece == "BK":
-            self.currentCastleRight.BKs = False
-            self.currentCastleRight.BQs = False
-
-    # Naive solution to generating valid moves.
     def getValidMovesNaive(self):
+        """
+        Generates all valid moves by processing each move and identifying which moves result in check, checkmate, or
+        stalemate.
+
+        :return:
+        """
+
+        # Save the previous information about EnPassant and Castling Rights.
         tempEnPassantPossible = self.enPassantPossible
         tempCastleRights = CastleRights(self.currentCastleRight.WKs, self.currentCastleRight.BKs,
                                         self.currentCastleRight.WQs, self.currentCastleRight.BQs)
@@ -188,6 +299,7 @@ class ChessGame:
 
         if self.whiteToMove:
             self.getCastleMoves(self.WK_Location[0], self.WK_Location[1], allPossibleMoves, not self.whiteToMove)
+
         else:
             self.getCastleMoves(self.BK_Location[0], self.BK_Location[1], allPossibleMoves, not self.whiteToMove)
 
@@ -218,16 +330,26 @@ class ChessGame:
 
         self.enPassantPossible = tempEnPassantPossible
         self.currentCastleRight = tempCastleRights
+
         return allPossibleMoves
 
     # Advanced solution to generating valid moves.
     def getValidMovesAdvanced(self):
-        validMoves = []
+        """
+        Generates a list of valid moves based on the current ChessBoard by identifying all possible moves,
+        then removing moves that are invalid based on checks or multi-checks.
+
+        :return validMoves: The list of valid moves.
+        :rtype: list
+        """
+
+        validMoves: list = []
         self.inCheckByPiece, self.pins, self.checks = self.checkForPinsAndChecks()
 
         if self.whiteToMove:
             kingRow = self.WK_Location[0]
             kingColumn = self.WK_Location[1]
+
         else:
             kingRow = self.BK_Location[0]
             kingColumn = self.BK_Location[1]
@@ -263,7 +385,7 @@ class ChessGame:
                         if not (validMoves[i].endRow, validMoves[i].endColumn) in validSquaresToBlockOrCapture:
                             validMoves.remove(validMoves[i])
 
-            # Check is a double (or more) check, user must move the king.
+            # Check is a double (or more) check, so the checked user must move its king.
             else:
                 self.getKingMoves(kingRow, kingColumn, validMoves)
 
@@ -273,9 +395,23 @@ class ChessGame:
         return validMoves
 
     def checkForPinsAndChecks(self):
+        """
+        Identifies any pins or checks based on the current piece color.
+
+        :return
+            inCheck:
+            pins:
+            checks:
+
+        :rtype
+            inCheck: bool
+            pins: list
+            checks: list
+        """
+
+        inCheck = False
         pins = []
         checks = []
-        inCheck = False
 
         if self.whiteToMove:
             enemyColor = 'B'
@@ -382,8 +518,12 @@ class ChessGame:
 
         return inCheck, pins, checks
 
-    # Determine if the current player is in check.
     def inCheck(self):
+        """
+        Determine if the current player is in check.
+        :return:
+        """
+
         if self.whiteToMove:
             row = self.WK_Location[0]
             column = self.WK_Location[1]
@@ -396,6 +536,13 @@ class ChessGame:
 
     # Determine if the enemy can attack the square (row, column).
     def squareUnderAttack(self, row, column):
+        """
+
+        :param row:
+        :param column:
+        :return:
+        """
+
         # Switch view to opponent.
         self.whiteToMove = not self.whiteToMove
 
@@ -412,6 +559,11 @@ class ChessGame:
         return False
 
     def getAllPossibleMoves(self):
+        """
+
+        :return:
+        """
+
         moves = []
         for row in range(len(self.ChessBoard)):
             for column in range(len(self.ChessBoard[row])):
@@ -441,6 +593,14 @@ class ChessGame:
         return moves
 
     def getPawnMoves(self, row, column, moves):
+        """
+
+        :param row:
+        :param column:
+        :param moves:
+        :return:
+        """
+
         piecePinned = False
         pinDirection = ()
 
@@ -511,6 +671,14 @@ class ChessGame:
         return moves
 
     def getRookMoves(self, row, column, moves):
+        """
+
+        :param row:
+        :param column:
+        :param moves:
+        :return:
+        """
+
         piecePinned = False
         pinDirection = ()
 
@@ -555,6 +723,14 @@ class ChessGame:
                     break
 
     def getKnightMoves(self, row, column, moves):
+        """
+
+        :param row:
+        :param column:
+        :param moves:
+        :return:
+        """
+
         piecePinned = False
 
         for i in range(len(self.pins) - 1, -1, -1):
@@ -588,6 +764,14 @@ class ChessGame:
                         moves.append(Move((row, column), (endRow, endColumn), self))
 
     def getBishopMoves(self, row, column, moves):
+        """
+
+        :param row:
+        :param column:
+        :param moves:
+        :return:
+        """
+
         piecePinned = False
         pinDirection = ()
 
@@ -632,10 +816,26 @@ class ChessGame:
                     break
 
     def getQueenMoves(self, row, column, moves):
+        """
+
+        :param row:
+        :param column:
+        :param moves:
+        :return:
+        """
+
         self.getRookMoves(row, column, moves)
         self.getBishopMoves(row, column, moves)
 
     def getKingMoves(self, row, column, moves):
+        """
+
+        :param row:
+        :param column:
+        :param moves:
+        :return:
+        """
+
         directions = [
             (-1, 0),  # Up one
             (1, 0),  # Down one
@@ -673,6 +873,15 @@ class ChessGame:
                         self.BK_Location = (row, column)
 
     def getCastleMoves(self, row, column, moves, allyColor):
+        """
+
+        :param row:
+        :param column:
+        :param moves:
+        :param allyColor:
+        :return:
+        """
+
         if self.squareUnderAttack(row, column):
             return
 
@@ -685,73 +894,65 @@ class ChessGame:
             self.getQueenSideCastleMoves(row, column, moves, allyColor)
 
     def getKingSideCastleMoves(self, row, column, moves, allyColor):
+        """
+
+        :param row:
+        :param column:
+        :param moves:
+        :param allyColor:
+        :return:
+        """
+
         if self.ChessBoard[row][column + 1] == "--" and self.ChessBoard[row][column + 2] == "--":
             if not self.squareUnderAttack(row, column + 1) and not self.squareUnderAttack(row, column + 2):
                 moves.append(Move((row, column), (row, column + 2), self, isCastleMove=True))
 
     def getQueenSideCastleMoves(self, row, column, moves, allyColor):
+        """
+
+        :param row:
+        :param column:
+        :param moves:
+        :param allyColor:
+        :return:
+        """
+
         if self.ChessBoard[row][column - 1] == "--" and self.ChessBoard[row][column - 2] == "--" \
                 and self.ChessBoard[row][column - 3]:
             if not self.squareUnderAttack(row, column - 1) and not self.squareUnderAttack(row, column - 2):
                 moves.append(Move((row, column), (row, column - 2), self, isCastleMove=True))
 
+    def updateCastleRights(self, move: Move):
+        """
+        Updates castling rights after a user selected move.
 
-# This class represents
-class CastleRights:
-    def __init__(self, WKs, BKs, WQs, BQs):
-        self.WKs = WKs
-        self.BKs = BKs
-        self.WQs = WQs
-        self.BQs = BQs
+        :param move: The user selected move.
+        :return: None
+        """
 
+        # Check if the moved piece is a White or Black King or Rook.
+        if move.movedPiece == "WR":
+            if move.startRow == 7:
+                # Check if the moved piece is on the King or Queen side.
+                if move.startColumn == 0:
+                    self.currentCastleRight.WQs = False
 
-# This class represents a single move within the game. It includes representation for rank/file, tracking to which
-# piece recently moved, as well as which piece was recently captured (or a piece moves to an empty square).
-class Move:
-    # This will allow us to represent our rows and columns in rank/file notation.
-    ranks_to_rows = {"1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1, "8": 0}
-    rows_to_ranks = {value: key for key, value in ranks_to_rows.items()}
+                elif move.startColumn == 7:
+                    self.currentCastleRight.WKs = False
 
-    files_to_columns = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
-    column_to_files = {value: key for key, value in files_to_columns.items()}
+        elif move.movedPiece == "BR":
+            if move.startRow == 0:
+                # Check if the moved piece is on the King or Queen side.
+                if move.startColumn == 0:
+                    self.currentCastleRight.BQs = False
 
-    def __init__(self, starting_square, ending_square, game_state, isPawnPromotion=False, isEnPassantMove=False,
-                 isCastleMove=False):
-        self.startRow = starting_square[0]
-        self.startColumn = starting_square[1]
+                elif move.startColumn == 7:
+                    self.currentCastleRight.BKs = False
 
-        self.endRow = ending_square[0]
-        self.endColumn = ending_square[1]
+        elif move.movedPiece == "WK":
+            self.currentCastleRight.WKs = False
+            self.currentCastleRight.WQs = False
 
-        self.movedPiece = game_state.ChessBoard[self.startRow][self.startColumn]
-        self.capturedPiece = game_state.ChessBoard[self.endRow][self.endColumn]
-
-        # Unique ID for each move.
-        self.moveID = self.startRow * 1000 + self.endRow * 100 + self.startColumn * 10 + self.endColumn
-
-        # Check for pawn promotion.
-        self.isPawnPromotion = isPawnPromotion
-
-        # Check for En Passant.
-        self.isEnPassant = isEnPassantMove
-
-        if self.isEnPassant:
-            self.capturedPiece = 'BP' if self.movedPiece == 'WP' else 'WP'
-
-        # Check for Castling.
-        self.isCastleMove = isCastleMove
-
-    def __eq__(self, other):
-        if isinstance(other, Move):
-            if self.moveID == other.moveID:
-                return True
-
-        return False
-
-    # Produces the necessary chess notation for the move log.
-    def getChessNotation(self):
-        return self.getRankFile(self.startRow, self.startColumn) + self.getRankFile(self.endRow, self.endColumn)
-
-    # Chess notation specifies that the column/file comes before the row/rank.
-    def getRankFile(self, row, column):
-        return self.column_to_files[column] + self.rows_to_ranks[row]
+        elif move.movedPiece == "BK":
+            self.currentCastleRight.BKs = False
+            self.currentCastleRight.BQs = False
